@@ -13,8 +13,6 @@ const char* password = WIFI_PASSWORD;
 
 ESP8266WebServer server(80);
 
-const int led = LED_BUILTIN;
-
 boolean _redLit = false;
 boolean _greenLit = false;
 
@@ -64,42 +62,11 @@ String renderPage() {
 }
 
 void handleRoot() {
-  digitalWrite(led, 1);
   String content = renderPage();
   server.send(200, "text/html", content);
-  digitalWrite(led, 0);
-}
-
-void handlePlain() {
-  if (server.method() != HTTP_POST) {
-    digitalWrite(led, 1);
-    server.send(405, "text/plain", "Method Not Allowed");
-    digitalWrite(led, 0);
-  } else {
-    digitalWrite(led, 1);
-    server.send(200, "text/plain", "POST body was:\n" + server.arg("plain"));
-    digitalWrite(led, 0);
-  }
-}
-
-void handleForm() {
-  if (server.method() != HTTP_POST) {
-    digitalWrite(led, 1);
-    server.send(405, "text/plain", "Method Not Allowed");
-    digitalWrite(led, 0);
-  } else {
-    digitalWrite(led, 1);
-    String message = "POST form was:\n";
-    for (uint8_t i = 0; i < server.args(); i++) {
-      message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
-    }
-    server.send(200, "text/plain", message);
-    digitalWrite(led, 0);
-  }
 }
 
 void handleNotFound() {
-  digitalWrite(led, 1);
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += server.uri();
@@ -112,7 +79,6 @@ void handleNotFound() {
     message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
   }
   server.send(404, "text/plain", message);
-  digitalWrite(led, 0);
 }
 
 void handlePostLightControl(int light, boolean newState){
@@ -154,8 +120,6 @@ void setup(void) {
   pinMode(RED_LIGHT, OUTPUT);
   pinMode(GREEN_LIGHT, OUTPUT);
   
-  pinMode(led, OUTPUT);
-  digitalWrite(led, 0);
   Serial.begin(115200);
   WiFi.begin(ssid, password);
   WiFi.hostname(HOST_NAME);
@@ -184,10 +148,6 @@ void setup(void) {
   server.on("/green/on", greenOn);
   server.on("/green/off", greenOff);
   
-  server.on("/postplain/", handlePlain);
-
-  server.on("/postform/", handleForm);
-
   server.onNotFound(handleNotFound);
 
   server.begin();
