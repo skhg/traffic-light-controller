@@ -15,6 +15,9 @@ const String HOST_NAME = "traffic-light";
 const char* ssid     = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 
+const String _falseString = "false";
+const String _trueString = "true";
+
 ESP8266WebServer server(80);
 
 boolean _redLit = false;
@@ -30,41 +33,22 @@ String renderPage() {
   
   if(_redLit){
     redFormAction = "/red/off";
-    redButton = "OFF";
+    redButton = "red dark";
   }else{
     redFormAction = "/red/on";
-    redButton = "ON";
+    redButton = "red";
   }
 
   if(_greenLit){
     greenFormAction = "/green/off";
-    greenButton = "OFF";
+    greenButton = "green dark";
   }else{
     greenFormAction = "/green/on";
-    greenButton = "ON";
+    greenButton = "green";
   }
 
   return
-  "<html>\
-    <head>\
-      <title>Traffic Light</title>\
-      <style>\
-        body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
-      </style>\
-    </head>\
-    <body>\
-      <h1>RED Light</h1>\
-      <p>Relay 1</p>\
-      <form method=\"post\" action=\"" + redFormAction + "\">\
-        <input type=\"submit\" value=\"" + redButton + "\">\
-      </form>\
-      <h1>GREEN Light</h1>\
-      <p>Relay 2</p>\
-      <form method=\"post\" action=\"" + greenFormAction + "\">\
-        <input type=\"submit\" value=\"" + greenButton + "\">\
-      </form>\
-    </body>\
-  </html>";
+  "<html><head><title>Traffic Light</title><style>html,body,.grid-container{height:100%;margin:0}.grid-container{background-color:#000;display:grid;grid-template-columns:1fr;grid-template-rows:1fr 1fr 1fr 1fr;gap:0px 0px;grid-template-areas:'red' 'red' 'green' 'green'}.dark{opacity:25%}#red{grid-area:red;background-color:#b00000}#green{grid-area:green;background-color:#03b000}.button{width:100%;height:100%;opacity:0%}</style> <script>var serverAddr='http://192.168.178.37';var greenOn=true;var redOn=true;var refreshQuery=new XMLHttpRequest();function setupLoop(){setInterval(refreshState,500);};function updateColourBlocks(){if(greenOn){document.getElementById('green').className='green';}else{document.getElementById('green').className='green dark';} if(redOn){document.getElementById('red').className='red';}else{document.getElementById('red').className='red dark';}};function refreshState(){refreshQuery=new XMLHttpRequest();refreshQuery.open('GET',serverAddr+'/status',true);refreshQuery.onreadystatechange=function(){if(refreshQuery.readyState==XMLHttpRequest.DONE){if(refreshQuery.status==200){var result=JSON.parse(refreshQuery.responseText);greenOn=result.green;redOn=result.red;updateColourBlocks();}}};refreshQuery.send();};function green(){refreshQuery.abort();var xhr=new XMLHttpRequest();var cmd='off';if(greenOn){cmd='off';}else{cmd='on';} xhr.open('POST',serverAddr+'/green/'+cmd,true);xhr.send();greenOn=!greenOn;updateColourBlocks();};function red(){refreshQuery.abort();var xhr=new XMLHttpRequest();var cmd='off';if(redOn){cmd='off';}else{cmd='on';} xhr.open('POST',serverAddr+'/red/'+cmd,true);xhr.send();redOn=!redOn;updateColourBlocks();};</script> </head><body onload='setupLoop()'><div class='grid-container'><div id='red' class='dark' onclick='red()'></div><div id='green' class='dark' onclick='green()'></div></div></body></html>";
 }
 
 void handleRoot() {
@@ -100,8 +84,26 @@ void handlePostLightControl(int light, boolean newState){
     digitalWrite(light, !newState); // because LOW means ON
     Serial.println(String(light) + " is now "+ String(newState));
 
-    String content = renderPage();
-    server.send(200, "text/html", content);
+    server.send(204, "text/html", "");
+  }
+}
+
+String clientIP(){
+  return server.client().remoteIP().toString();
+}
+
+void lightStatus(){
+  if (server.method() != HTTP_GET) {
+    server.send(405, "text/plain", "Method Not Allowed");
+  } else {
+    Serial.println("Status request from client: "+ clientIP());
+    String content = "\
+    {\
+      \"red\" : " + String(_redLit ? _trueString : _falseString) + ",\
+      \"green\" : " + String(_greenLit ? _trueString : _falseString) + "\  
+    }";
+    
+    server.send(200, "application/json", content);
 
   }
 }
@@ -158,6 +160,7 @@ void setup(void) {
   server.on("/red/off", redOff);
   server.on("/green/on", greenOn);
   server.on("/green/off", greenOff);
+  server.on("/status", lightStatus);
   
   server.onNotFound(handleNotFound);
 
