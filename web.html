@@ -1,7 +1,7 @@
 <html>
    <head>
       <title>Traffic Light</title>
-		<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@1,700&display=swap" rel="stylesheet">
+		<link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@1,700&display=swap' rel='stylesheet'>
       <style>
       	html, body, .grid-container { height: 100%; margin: 0; }
 
@@ -48,12 +48,32 @@
 			width: 600px;
 			height: 600px;
 			border-radius: 50%;
-			font-size: 100px;
-			color: #666;
+			font-size: 100px;			
 			line-height: 600px;
 			text-align: center;
-			background: #111;
+
 		}
+
+		.noParty {
+			background: #111;
+			color: #666;
+		}
+
+		.party {
+			color: #000;
+			background: #fff;
+			-webkit-animation: rotation 2s infinite linear;
+		}
+
+		@-webkit-keyframes rotation {
+			from {
+				-webkit-transform: rotate(0deg);
+			}
+			to {
+				-webkit-transform: rotate(359deg);
+			}
+		}
+
       </style>
 
       <script>
@@ -61,6 +81,7 @@
       	var greenOn = true;
       	var redOn = true;
       	var refreshQuery = new XMLHttpRequest();
+      	var isParty = false;
 
       	function setupLoop(){
       		setInterval(refreshState, 500);
@@ -126,7 +147,20 @@
       	};
 
       	function party(){
-      		console.log('party');
+      		if(isParty){
+      			document.getElementById('circle').className = 'noParty';
+
+      			var xhr = new XMLHttpRequest();
+	      		xhr.open('DELETE', serverAddr + '/party', true);
+	    		xhr.send();
+      		} else {
+      			document.getElementById('circle').className = 'party';
+
+      			var xhr = new XMLHttpRequest();
+	      		xhr.open('POST', serverAddr + '/party', true);
+	    		xhr.send();
+      		}
+      		isParty = !isParty;
       	};
 
       </script>
@@ -138,8 +172,8 @@
 			<div id='red' class='dark' onclick='red()'></div>
 			<div id='green' class='dark' onclick='green()'></div>
 		</div>
-		<div id="circle-container">
-		    <div id="circle" onclick='party()'>Party Mode</div>
+		<div id='circle-container'>
+		    <div id='circle' class='noParty' onclick='party()'>Party Mode</div>
 		</div>
 		
    </body>

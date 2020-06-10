@@ -25,6 +25,7 @@ StaticJsonDocument<200> doc;
 boolean _redLit = false;
 boolean _greenLit = false;
 int _bpm = 100;
+boolean _partyOn = false;
 
 String renderPage() {
 
@@ -51,7 +52,7 @@ String renderPage() {
   }
 
   return
-  "<html><head><title>Traffic Light</title><style>html,body,.grid-container{height:100%;margin:0}.grid-container{background-color:#000;display:grid;grid-template-columns:1fr;grid-template-rows:1fr 1fr 1fr 1fr;gap:0px 0px;grid-template-areas:'red' 'red' 'green' 'green'}.dark{opacity:25%}#red{grid-area:red;background-color:#b00000}#green{grid-area:green;background-color:#03b000}.button{width:100%;height:100%;opacity:0%}</style> <script>var serverAddr='http://192.168.178.37';var greenOn=true;var redOn=true;var refreshQuery=new XMLHttpRequest();function setupLoop(){setInterval(refreshState,500);};function updateColourBlocks(){if(greenOn){document.getElementById('green').className='green';}else{document.getElementById('green').className='green dark';} if(redOn){document.getElementById('red').className='red';}else{document.getElementById('red').className='red dark';}};function refreshState(){refreshQuery=new XMLHttpRequest();refreshQuery.open('GET',serverAddr+'/status',true);refreshQuery.onreadystatechange=function(){if(refreshQuery.readyState==XMLHttpRequest.DONE){if(refreshQuery.status==200){var result=JSON.parse(refreshQuery.responseText);greenOn=result.green;redOn=result.red;updateColourBlocks();}}};refreshQuery.send();};function green(){refreshQuery.abort();var xhr=new XMLHttpRequest();var cmd='off';if(greenOn){cmd='off';}else{cmd='on';} xhr.open('POST',serverAddr+'/green/'+cmd,true);xhr.send();greenOn=!greenOn;updateColourBlocks();};function red(){refreshQuery.abort();var xhr=new XMLHttpRequest();var cmd='off';if(redOn){cmd='off';}else{cmd='on';} xhr.open('POST',serverAddr+'/red/'+cmd,true);xhr.send();redOn=!redOn;updateColourBlocks();};</script> </head><body onload='setupLoop()'><div class='grid-container'><div id='red' class='dark' onclick='red()'></div><div id='green' class='dark' onclick='green()'></div></div></body></html>";
+  "<html><head><title>Traffic Light</title><link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@1,700&display=swap' rel='stylesheet'><style>html,body,.grid-container{height:100%;margin:0}.grid-container{background-color:#000;display:grid;grid-template-columns:1fr;grid-template-rows:1fr 1fr 1fr 1fr;gap:0px 0px;grid-template-areas:'red' 'red' 'green' 'green'}.dark{opacity:25%}#red{grid-area:red;background-color:#b00000}#green{grid-area:green;background-color:#03b000}.button{width:100%;height:100%;opacity:0%}#circle-container{position:absolute;top:50%;left:50%;-moz-transform:translateX(-50%) translateY(-50%);-webkit-transform:translateX(-50%) translateY(-50%);transform:translateX(-50%) translateY(-50%)}#circle{font-family:'IBM Plex Sans',sans-serif;width:600px;height:600px;border-radius:50%;font-size:100px;line-height:600px;text-align:center}.noParty{background:#111;color:#666}.party{color:#000;background:#fff;-webkit-animation:rotation 2s infinite linear}@-webkit-keyframes rotation{from{-webkit-transform:rotate(0deg)}to{-webkit-transform:rotate(359deg)}}</style> <script>var serverAddr='http://192.168.178.37';var greenOn=true;var redOn=true;var refreshQuery=new XMLHttpRequest();var isParty=false;function setupLoop(){setInterval(refreshState,500);};function updateColourBlocks(){if(greenOn){document.getElementById('green').className='green';}else{document.getElementById('green').className='green dark';} if(redOn){document.getElementById('red').className='red';}else{document.getElementById('red').className='red dark';}};function refreshState(){refreshQuery=new XMLHttpRequest();refreshQuery.open('GET',serverAddr+'/status',true);refreshQuery.onreadystatechange=function(){if(refreshQuery.readyState==XMLHttpRequest.DONE){if(refreshQuery.status==200){var result=JSON.parse(refreshQuery.responseText);greenOn=result.green;redOn=result.red;updateColourBlocks();}}};refreshQuery.send();};function green(){refreshQuery.abort();var xhr=new XMLHttpRequest();var cmd='off';if(greenOn){cmd='off';}else{cmd='on';} xhr.open('POST',serverAddr+'/green/'+cmd,true);xhr.send();greenOn=!greenOn;updateColourBlocks();};function red(){refreshQuery.abort();var xhr=new XMLHttpRequest();var cmd='off';if(redOn){cmd='off';}else{cmd='on';} xhr.open('POST',serverAddr+'/red/'+cmd,true);xhr.send();redOn=!redOn;updateColourBlocks();};function party(){if(isParty){document.getElementById('circle').className='noParty';var xhr=new XMLHttpRequest();xhr.open('DELETE',serverAddr+'/party',true);xhr.send();}else{document.getElementById('circle').className='party';var xhr=new XMLHttpRequest();xhr.open('POST',serverAddr+'/party',true);xhr.send();} isParty=!isParty;};</script> </head><body onload='setupLoop()'><div class='grid-container'><div id='red' class='dark' onclick='red()'></div><div id='green' class='dark' onclick='green()'></div></div><div id='circle-container'><div id='circle' class='noParty' onclick='party()'>Party Mode</div></div></body></html>";
 }
 
 void handleRoot() {
@@ -88,6 +89,20 @@ void handlePostLightControl(int light, boolean newState){
     Serial.println(String(light) + " is now "+ String(newState));
 
     server.send(204, "text/html", "");
+  }
+}
+
+void controlParty(){
+  if(server.method() == HTTP_POST) {
+    server.send(200, "text/plain", "Party On!");
+    Serial.println("Party started");
+    _partyOn = true;
+  } else if (server.method() == HTTP_DELETE) {
+    server.send(200, "text/plain", "Party's Over");
+    Serial.println("Party ended");
+    _partyOn = false;
+  }else{
+    server.send(405, "text/plain", "Method Not Allowed");
   }
 }
 
@@ -182,6 +197,7 @@ void setup(void) {
   server.on("/green/on", greenOn);
   server.on("/green/off", greenOff);
   server.on("/tempo", setTempo);
+  server.on("/party", controlParty);
   server.on("/status", lightStatus);
   
   server.onNotFound(handleNotFound);
