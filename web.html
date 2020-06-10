@@ -51,7 +51,6 @@
 			font-size: 100px;			
 			line-height: 600px;
 			text-align: center;
-
 		}
 
 		.noParty {
@@ -82,22 +81,34 @@
       	var redOn = true;
       	var refreshQuery = new XMLHttpRequest();
       	var isParty = false;
+         var bpm = 100;
 
       	function setupLoop(){
       		setInterval(refreshState, 500);
       	};
       	
       	function updateColourBlocks(){
+            var circleDiv = document.getElementById('circle');
+            var greenDiv = document.getElementById('green');
+            var redDiv = document.getElementById('red');
+
       		if(greenOn){
-      			document.getElementById('green').className = 'green';
+      			greenDiv.className = 'green';
       		} else {
-      			document.getElementById('green').className = 'green dark';
+      			greenDiv.className = 'green dark';
       		}
       		if(redOn){
-      			document.getElementById('red').className = 'red';
+      			redDiv.className = 'red';
       		} else {
-      			document.getElementById('red').className = 'red dark';
+      			redDiv.className = 'red dark';
       		}
+            if(isParty){
+               circleDiv.className = 'party';
+               circleDiv.innerHTML = '' + bpm + ' BPM';
+            }else{
+               circleDiv.className = 'noParty';
+               circleDiv.innerHTML = 'Party Mode';
+            }
       	};
       	
       	function refreshState(){
@@ -109,6 +120,8 @@
       					var result = JSON.parse(refreshQuery.responseText);
       					greenOn = result.green;
       					redOn = result.red;
+                     isParty = result.party;
+                     bpm = result.bpm;
       					updateColourBlocks();
       				}
       			}
@@ -147,20 +160,18 @@
       	};
 
       	function party(){
+            refreshQuery.abort();
       		if(isParty){
-      			document.getElementById('circle').className = 'noParty';
-
       			var xhr = new XMLHttpRequest();
 	      		xhr.open('DELETE', serverAddr + '/party', true);
-	    		xhr.send();
+    		      xhr.send();
       		} else {
-      			document.getElementById('circle').className = 'party';
-
       			var xhr = new XMLHttpRequest();
 	      		xhr.open('POST', serverAddr + '/party', true);
-	    		xhr.send();
+	    		   xhr.send();
       		}
       		isParty = !isParty;
+            updateColourBlocks();
       	};
 
       </script>
