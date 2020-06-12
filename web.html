@@ -136,31 +136,29 @@
       	function green(){
       		refreshQuery.abort();
       		var xhr = new XMLHttpRequest();
-      		var cmd = 'off';
       		if(greenOn){
-      			cmd = 'off';
+      			xhr.open('DELETE', serverAddr + '/green', true);
       		}else{
-      			cmd = 'on';
+      			xhr.open('PUT', serverAddr + '/green', true);
       		}
-      		xhr.open('POST', serverAddr + '/green/'+cmd, true);
-    		xhr.send();
-    		greenOn = !greenOn;
-    		updateColourBlocks();
+      		
+       		xhr.send();
+       		greenOn = !greenOn;
+       		updateColourBlocks();
       	};
 
       	function red(){
       		refreshQuery.abort();
       		var xhr = new XMLHttpRequest();
-      		var cmd = 'off';
       		if(redOn){
-      			cmd = 'off';
+      			xhr.open('DELETE', serverAddr + '/red', true);
       		}else{
-      			cmd = 'on';
+      			xhr.open('PUT', serverAddr + '/red', true);
       		}
-      		xhr.open('POST', serverAddr + '/red/'+cmd, true);
-    		xhr.send();
-    		redOn = !redOn;
-    		updateColourBlocks();
+      		
+       		xhr.send();
+       		redOn = !redOn;
+       		updateColourBlocks();
       	};
 
       	function party(){
@@ -171,7 +169,7 @@
     		      xhr.send();
       		} else {
       			var xhr = new XMLHttpRequest();
-	      		xhr.open('POST', serverAddr + '/party', true);
+	      		xhr.open('PUT', serverAddr + '/party', true);
 	    		   xhr.send();
       		}
       		isParty = !isParty;
