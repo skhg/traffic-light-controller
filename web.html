@@ -2,6 +2,9 @@
    <head>
       <title>Traffic Light</title>
 		<link href='https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@1,700&display=swap' rel='stylesheet'>
+      <meta name='apple-mobile-web-app-capable' content='yes'>
+      <meta name='apple-mobile-web-app-status-bar-style' content='black'>
+      <link rel='apple-touch-icon' sizes='180x180' href='/apple-touch-icon.png'>
       <style>
       	html, body, .grid-container { height: 100%; margin: 0; }
 
@@ -76,7 +79,7 @@
       </style>
 
       <script>
-      	var serverAddr = 'http://192.168.178.37';
+      	var serverAddr = '';
       	var greenOn = true;
       	var redOn = true;
       	var refreshQuery = new XMLHttpRequest();
