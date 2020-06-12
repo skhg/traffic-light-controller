@@ -9,6 +9,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
+#include <WebSocketsServer.h>
 #include <home_wifi.h>
 #include <ArduinoJson.h>
 
@@ -20,6 +21,7 @@ const String _falseString = "false";
 const String _trueString = "true";
 
 ESP8266WebServer server(80);
+WebSocketsServer webSocket = WebSocketsServer(81);
 StaticJsonDocument<200> doc;
 
 boolean _redLit = false;
@@ -196,6 +198,18 @@ void appleTouchIcon(){
   server.send_P(200, "image/png", apple_touch_icon, sizeof(apple_touch_icon));
 }
 
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  IPAddress ip = webSocket.remoteIP(num);
+  
+  switch(type) {
+    case WStype_DISCONNECTED: Serial.print(ip); Serial.println(" websocket disconnected"); break;
+    case WStype_CONNECTED: {
+      Serial.print(ip); Serial.println(" websocket connected");
+      webSocket.sendTXT(num, "Connected");
+    }; break;
+  }
+}
+
 void setup(void) {
   _currentMillis = millis();
   
@@ -236,6 +250,11 @@ void setup(void) {
 
   server.begin();
   Serial.println("HTTP server started");
+
+
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+  Serial.println("Web Socket server started");
 }
 
 void loop(void) {
