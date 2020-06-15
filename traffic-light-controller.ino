@@ -14,8 +14,6 @@
 #include <ArduinoJson.h>
 
 const String HOST_NAME = "traffic-light";
-const char* ssid     = WIFI_SSID;
-const char* password = WIFI_PASSWORD;
 
 const String _falseString = "false";
 const String _trueString = "true";
@@ -23,6 +21,11 @@ const String _trueString = "true";
 ESP8266WebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 StaticJsonDocument<200> doc;
+
+StaticJsonDocument<JSON_OBJECT_SIZE(1)> _redJson;
+StaticJsonDocument<JSON_OBJECT_SIZE(1)> _greenJson;
+StaticJsonDocument<JSON_OBJECT_SIZE(1)> _partyJson;
+StaticJsonDocument<JSON_OBJECT_SIZE(1)> _bpmJson;
 
 boolean _redLit = false;
 boolean _greenLit = false;
@@ -88,27 +91,54 @@ void handleNotFound() {
 }
 
 void lightSwitch(int light, boolean newState){
+  String webSocketMessage;
+  
   switch(light){
-    case RED_LIGHT: _redLit = newState; break;
-    case GREEN_LIGHT: _greenLit = newState; break;
+    case RED_LIGHT: {
+      _redLit = newState;
+      _redJson["red"] = newState;
+      serializeJson(_redJson, webSocketMessage);
+      break;
+    }
+    case GREEN_LIGHT: {
+      _greenLit = newState;
+      _greenJson["green"] = newState;
+      serializeJson(_greenJson, webSocketMessage);
+      break;
+    }
   }
     
   digitalWrite(light, !newState); // because LOW means ON
+
+  for(int i=0; i < webSocket.connectedClients(false); i++){
+    webSocket.sendTXT(i, webSocketMessage);
+  }
 }
 
 void handleParty(){
+  String partyMessage;
+  
   if(server.method() == HTTP_PUT) {
+    _partyJson["party"] = true;
     server.send(200, "text/plain", "Party On!");
     Serial.println("Party started");
     _partyOn = true;
   } else if (server.method() == HTTP_DELETE) {
+    _partyJson["party"] = false;
     server.send(200, "text/plain", "Party's Over");
     Serial.println("Party ended");
     _partyOn = false;
   } else if(server.method() == HTTP_GET){
-    server.send(200, "application/json", "{ \"party\": " + String(_partyOn ? _trueString : _falseString) + "}");
+    serializeJson(_partyJson, partyMessage);
+    server.send(200, "application/json", partyMessage);
   } else{
     server.send(405, "text/plain", "Method Not Allowed");
+  }
+
+  serializeJson(_partyJson, partyMessage);
+  
+  for(int i=0; i < webSocket.connectedClients(false); i++){
+    webSocket.sendTXT(i, partyMessage);
   }
 }
 
@@ -124,7 +154,9 @@ void handleRed(){
     lightSwitch(RED_LIGHT, false);
     server.send(204, "text/html", "");
   } else if (server.method() == HTTP_GET){
-    server.send(200, "application/json", "{ \"lit\": " + String(_redLit ? _trueString : _falseString) + "}");
+    String redMessage;
+    serializeJson(_redJson, redMessage);
+    server.send(200, "application/json", redMessage);
   } else {
     server.send(405, "text/plain", "Method Not Allowed");
   }
@@ -138,7 +170,9 @@ void handleGreen(){
     lightSwitch(GREEN_LIGHT, false);
     server.send(204, "text/html", "");
   }else if(server.method() == HTTP_GET){
-    server.send(200, "application/json", "{ \"lit\": " + String(_greenLit ? _trueString : _falseString) + "}");
+    String greenMessage;
+    serializeJson(_greenJson, greenMessage);
+    server.send(200, "application/json", greenMessage);
   }else{
     server.send(405, "text/plain", "Method Not Allowed");
   }
@@ -202,15 +236,22 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
   IPAddress ip = webSocket.remoteIP(num);
   
   switch(type) {
-    case WStype_DISCONNECTED: Serial.print(ip); Serial.println(" websocket disconnected"); break;
+    case WStype_DISCONNECTED: {
+      Serial.println("WebSocket client disconnected."); break;
+    }
     case WStype_CONNECTED: {
-      Serial.print(ip); Serial.println(" websocket connected");
-      webSocket.sendTXT(num, "Connected");
+      Serial.print("WebSocket client at ");
+      Serial.print(ip);
+      Serial.println(" connected.");
     }; break;
   }
 }
 
 void setup(void) {
+  _redJson["red"] = false;
+  _greenJson["green"] = false;
+  _partyJson["party"] = false;
+  
   _currentMillis = millis();
   
   pinMode(RED_LIGHT, OUTPUT);
@@ -220,7 +261,7 @@ void setup(void) {
   digitalWrite(GREEN_LIGHT, HIGH);
   
   Serial.begin(115200);
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   WiFi.hostname(HOST_NAME);
 
   Serial.println("");
@@ -232,7 +273,7 @@ void setup(void) {
   }
   Serial.println("");
   Serial.print("Connected to ");
-  Serial.println(ssid);
+  Serial.println(WIFI_SSID);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
@@ -258,6 +299,7 @@ void setup(void) {
 }
 
 void loop(void) {
+  webSocket.loop();
   server.handleClient();
   rhythm();
   
