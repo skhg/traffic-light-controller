@@ -81,37 +81,64 @@
 
       <script>
       	var serverAddr = '/api';
-      	var greenOn = true;
-      	var redOn = true;
+         var state = {
+            'green' : true,
+            'red' : true,
+            'party' : false,
+            'bpm' : 100
+         };
       	var refreshQuery = new XMLHttpRequest();
-      	var isParty = false;
-         var bpm = 100;
+         var webSocket;
 
-      	function setupLoop(){
-      		setInterval(refreshState, 500);
+      	function setupApp(){
+      		refreshState();
+
+            webSocket = new WebSocket('ws://' + window.location.host + ':81');
+            webSocket.onmessage = handleWebSocketMessage;
       	};
+
+         function handleWebSocketMessage(event){
+            var messageContents = JSON.parse(event.data);
+
+            for(var key of Object.keys(messageContents)){
+               state[key] = messageContents[key];
+            }
+            
+            updateScreen();
+         };
+
+         function updateDomAttribute(domElement, attributeName, newValue){
+            if(attributeName === 'innerHTML'){
+               if(domElement.innerHTML != newValue){
+                  domElement.innerHTML = newValue;
+               }
+            }else if(domElement.getAttribute(attributeName) != newValue){
+               domElement.setAttribute(attributeName, newValue);
+            }
+         };
       	
-      	function updateColourBlocks(){
+      	function updateScreen(){
             var circleDiv = document.getElementById('circle');
             var greenDiv = document.getElementById('green');
             var redDiv = document.getElementById('red');
 
-      		if(greenOn){
-      			greenDiv.className = 'green';
+      		if(state['green']){
+               updateDomAttribute(greenDiv, 'class', 'green');
       		} else {
-      			greenDiv.className = 'green dark';
+               updateDomAttribute(greenDiv, 'class', 'green dark');
       		}
-      		if(redOn){
-      			redDiv.className = 'red';
+      		if(state['red']){
+               updateDomAttribute(redDiv, 'class', 'red');
       		} else {
-      			redDiv.className = 'red dark';
+               updateDomAttribute(redDiv, 'class', 'red dark');
       		}
-            if(isParty){
-               circleDiv.className = 'party';
-               circleDiv.innerHTML = '' + bpm + ' BPM';
+            if(state['party']){
+               updateDomAttribute(circleDiv, 'class', 'party');
+               var bpmString = state['bpm'] + ' BPM';
+               updateDomAttribute(circleDiv, 'innerHTML', bpmString);
             }else{
-               circleDiv.className = 'noParty';
-               circleDiv.innerHTML = 'Party Mode';
+               updateDomAttribute(circleDiv, 'class', 'noParty');
+               updateDomAttribute(circleDiv, 'innerHTML', 'Party Mode');
             }
       	};
       	
@@ -121,12 +148,8 @@
       		refreshQuery.onreadystatechange = function(){
       			if (refreshQuery.readyState == XMLHttpRequest.DONE) {
       				if (refreshQuery.status == 200) {
-      					var result = JSON.parse(refreshQuery.responseText);
-      					greenOn = result.green;
-      					redOn = result.red;
-                     isParty = result.party;
-                     bpm = result.bpm;
-      					updateColourBlocks();
+      					state = JSON.parse(refreshQuery.responseText);
+      					updateScreen();
       				}
       			}
       		};
@@ -136,34 +159,34 @@
       	function green(){
       		refreshQuery.abort();
       		var xhr = new XMLHttpRequest();
-      		if(greenOn){
+      		if(state['green']){
       			xhr.open('DELETE', serverAddr + '/green', true);
       		}else{
       			xhr.open('PUT', serverAddr + '/green', true);
       		}
       		
        		xhr.send();
-       		greenOn = !greenOn;
-       		updateColourBlocks();
+       		state['green'] = !state['green'];
+       		updateScreen();
       	};
 
       	function red(){
       		refreshQuery.abort();
       		var xhr = new XMLHttpRequest();
-      		if(redOn){
+      		if(state['red']){
       			xhr.open('DELETE', serverAddr + '/red', true);
       		}else{
       			xhr.open('PUT', serverAddr + '/red', true);
       		}
       		
        		xhr.send();
-       		redOn = !redOn;
-       		updateColourBlocks();
+       		state['red'] = !state['red'];
+       		updateScreen();
       	};
 
       	function party(){
             refreshQuery.abort();
-      		if(isParty){
+      		if(state['party']){
       			var xhr = new XMLHttpRequest();
 	      		xhr.open('DELETE', serverAddr + '/party', true);
     		      xhr.send();
@@ -172,14 +195,14 @@
 	      		xhr.open('PUT', serverAddr + '/party', true);
 	    		   xhr.send();
       		}
-      		isParty = !isParty;
-            updateColourBlocks();
+      		state['party'] = !state['party'];
+            updateScreen();
       	};
 
       </script>
 	</head>
 
-	<body onload='setupLoop()'>
+	<body onload='setupApp()'>
 
 		<div class='grid-container'>
 			<div id='red' class='dark' onclick='red()'></div>
