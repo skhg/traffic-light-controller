@@ -13,11 +13,22 @@
 #include <ArduinoJson.h>
 
 const String HOST_NAME = "traffic-light";
-const char* ssid     = WIFI_SSID;
-const char* password = WIFI_PASSWORD;
 
-const String _falseString = "false";
-const String _trueString = "true";
+const String FALSE_STRING = "false";
+const String TRUE_STRING = "true";
+const String EMPTY_STRING = "";
+
+const String CONTENT_TYPE_TEXT_PLAIN = "text/plain";
+const String CONTENT_TYPE_APPLICATION_JSON = "application/json";
+const String CONTENT_TYPE_TEXT_HTML = "text/html";
+
+const int HTTP_OK = 200;
+const int HTTP_NO_CONTENT = 204;
+const int HTTP_NOT_FOUND = 404;
+const int HTTP_METHOD_NOT_ALLOWED = 405;
+const int HTTP_BAD_REQUEST = 400;
+
+const String METHOD_NOT_ALLOWED_MESSAGE = "Method Not Allowed";
 
 ESP8266WebServer server(80);
 StaticJsonDocument<200> doc;
@@ -67,7 +78,7 @@ void rhythm(){
 }
 
 void handleRoot() {
-  server.send(200, "text/html", STATIC_HTML_PAGE);
+  server.send(HTTP_OK, CONTENT_TYPE_TEXT_HTML, STATIC_HTML_PAGE);
 }
 
 void handleNotFound() {
@@ -82,7 +93,7 @@ void handleNotFound() {
   for (uint8_t i = 0; i < server.args(); i++) {
     message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
   }
-  server.send(404, "text/plain", message);
+  server.send(HTTP_NOT_FOUND, CONTENT_TYPE_TEXT_PLAIN, message);
 }
 
 void lightSwitch(int light, boolean newState){
@@ -96,17 +107,17 @@ void lightSwitch(int light, boolean newState){
 
 void handleParty(){
   if(server.method() == HTTP_PUT) {
-    server.send(200, "text/plain", "Party On!");
+    server.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party On!");
     Serial.println("Party started");
     _partyOn = true;
   } else if (server.method() == HTTP_DELETE) {
-    server.send(200, "text/plain", "Party's Over");
+    server.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party's Over");
     Serial.println("Party ended");
     _partyOn = false;
   } else if(server.method() == HTTP_GET){
-    server.send(200, "application/json", "{ \"party\": " + String(_partyOn ? _trueString : _falseString) + "}");
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, "{ \"party\": " + String(_partyOn ? TRUE_STRING : FALSE_STRING) + "}");
   } else{
-    server.send(405, "text/plain", "Method Not Allowed");
+    server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
@@ -117,44 +128,44 @@ String clientIP(){
 void handleRed(){
   if(server.method() == HTTP_PUT){
     lightSwitch(RED_LIGHT, true);
-    server.send(204, "text/html", "");
+    server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   } else if (server.method() == HTTP_DELETE){
     lightSwitch(RED_LIGHT, false);
-    server.send(204, "text/html", "");
+    server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   } else if (server.method() == HTTP_GET){
-    server.send(200, "application/json", "{ \"lit\": " + String(_redLit ? _trueString : _falseString) + "}");
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, "{ \"lit\": " + String(_redLit ? TRUE_STRING : FALSE_STRING) + "}");
   } else {
-    server.send(405, "text/plain", "Method Not Allowed");
+    server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
 void handleGreen(){
   if(server.method() == HTTP_PUT){
     lightSwitch(GREEN_LIGHT, true);
-    server.send(204, "text/html", "");
+    server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   }else if(server.method() == HTTP_DELETE){
     lightSwitch(GREEN_LIGHT, false);
-    server.send(204, "text/html", "");
+    server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   }else if(server.method() == HTTP_GET){
-    server.send(200, "application/json", "{ \"lit\": " + String(_greenLit ? _trueString : _falseString) + "}");
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, "{ \"lit\": " + String(_greenLit ? TRUE_STRING : FALSE_STRING) + "}");
   }else{
-    server.send(405, "text/plain", "Method Not Allowed");
+    server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
 void lightStatus(){
   if (server.method() != HTTP_GET) {
-    server.send(405, "text/plain", "Method Not Allowed");
+    server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   } else {
     String content = "\
     {\
-      \"red\" : " + String(_redLit ? _trueString : _falseString) + ",\
-      \"green\" : " + String(_greenLit ? _trueString : _falseString) + ",\
-      \"party\" : " + String(_partyOn ? _trueString : _falseString) + ",\
+      \"red\" : " + String(_redLit ? TRUE_STRING : FALSE_STRING) + ",\
+      \"green\" : " + String(_greenLit ? TRUE_STRING : FALSE_STRING) + ",\
+      \"party\" : " + String(_partyOn ? TRUE_STRING : FALSE_STRING) + ",\
       \"bpm\" : " + String(_bpm) + "\
     }";
     
-    server.send(200, "application/json", content);
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
 
   }
 }
@@ -162,17 +173,17 @@ void lightStatus(){
 void handleTempo(){
   if(server.method() == HTTP_PUT){
     if(server.hasArg("plain") == false) {
-      server.send(400, "text/plain", "Missing body");
+      server.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN, "Missing body");
     }else{
       deserializeJson(doc, server.arg("plain"));
       _bpm = doc["bpm"];
       Serial.println("BPM is now: " + String(_bpm));
-      server.send(204, "text/html", "");
+      server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
     }
   } else if (server.method() == HTTP_GET){
-    server.send(200, "application/json", "{ \"bpm\": " + String(_bpm) + "}");
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, "{ \"bpm\": " + String(_bpm) + "}");
   } else {
-    server.send(405, "text/plain", "Method Not Allowed");
+    server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
@@ -182,18 +193,18 @@ const char apple_touch_icon[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
 
 void favicon(){
   if (server.method() != HTTP_GET) {
-    server.send(405, "text/plain", "Method Not Allowed");
+    server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
     return;
   }
-  server.send_P(200, "image/x-icon", favicon_ico, sizeof(favicon_ico));
+  server.send_P(HTTP_OK, "image/x-icon", favicon_ico, sizeof(favicon_ico));
 }
 
 void appleTouchIcon(){
   if (server.method() != HTTP_GET) {
-    server.send(405, "text/plain", "Method Not Allowed");
+    server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
     return;
   }
-  server.send_P(200, "image/png", apple_touch_icon, sizeof(apple_touch_icon));
+  server.send_P(HTTP_OK, "image/png", apple_touch_icon, sizeof(apple_touch_icon));
 }
 
 void setup(void) {
@@ -206,21 +217,24 @@ void setup(void) {
   digitalWrite(GREEN_LIGHT, HIGH);
   
   Serial.begin(115200);
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   WiFi.hostname(HOST_NAME);
 
-  Serial.println("");
+  Serial.println(EMPTY_STRING);
 
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("");
+  Serial.println(EMPTY_STRING);
   Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println(WIFI_SSID);
+  Serial.print("Access at http://");
+  Serial.print(WiFi.localIP());
+  Serial.print("/ or http://");
+  Serial.print(HOST_NAME);
+  Serial.println("/");
 
   server.on("/", handleRoot);
 
