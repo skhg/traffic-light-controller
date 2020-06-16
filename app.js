@@ -5,7 +5,7 @@ var refreshQuery = new XMLHttpRequest();
 var isParty = false;
 var bpm = 100;
 
-function setupLoop(){
+function app(){
 	setInterval(refreshState, 500);
 };
 
