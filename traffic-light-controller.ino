@@ -11,6 +11,8 @@
 #include <ESP8266WebServer.h>
 #include <home_wifi.h>
 #include <ArduinoJson.h>
+#include <WebSocketsServer.h>
+#include <ezTime.h>
 
 // Static content includes. File contents generated from originals with prepareStaticContent.py
 #include "index_html.h"
@@ -40,18 +42,26 @@ const int HTTP_BAD_REQUEST = 400;
 const String METHOD_NOT_ALLOWED_MESSAGE = "Method Not Allowed";
 
 ESP8266WebServer server(80);
-StaticJsonDocument<200> doc;
+WebSocketsServer webSocket(81);
+StaticJsonDocument<200> doc; //todo this should not be global because of https://arduinojson.org/v6/faq/i-found-a-memory-leak-in-the-library/
 
 boolean _redLit = false;
 boolean _greenLit = false;
 int _bpm = 100;
 boolean _partyOn = false;
-unsigned long _currentMillis = 0;
-unsigned long _beatStartMillis = 0;
+unsigned long _currentMillis = millis();
+unsigned long _beatStartMillis = millis();
+String _beatStartEpoch = "0";
 int _rhythmStep = 0;
 
 const int RHYTHM_STEPS = 8;
 const int RHYTHM_PATTERN[] = {RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, BOTH_FLASH, BOTH_FLASH};
+
+void sendToWebSocketClients(String webSocketMessage){
+  for(int i=0; i < webSocket.connectedClients(false); i++){
+    webSocket.sendTXT(i, webSocketMessage);
+  }
+}
 
 void lightSwitch(int light, boolean newState){
   switch(light){
@@ -75,6 +85,12 @@ void partyFlash(){
   }
 }
 
+String epochMillis(){
+  char buffer [3];
+  sprintf(buffer,"%03d",ms());
+  return String(now()) + buffer;
+}
+
 void rhythm(){
   int timingIntervalMilis = 60000 / (_bpm * 2);
   
@@ -82,7 +98,8 @@ void rhythm(){
   
   if(_currentMillis - _beatStartMillis > timingIntervalMilis){
     _beatStartMillis = _currentMillis;
-
+    _beatStartEpoch = epochMillis();
+    
     if(_rhythmStep >= (RHYTHM_STEPS * 2) - 1){
       _rhythmStep = 0;
     }else{
@@ -135,6 +152,7 @@ void handleParty(){
   if(server.method() == HTTP_PUT) {
     server.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party On!");
     Serial.println("Party started");
+    waitForSync();
     _partyOn = true;
   } else if (server.method() == HTTP_DELETE) {
     server.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party's Over");
@@ -179,20 +197,15 @@ void handleGreen(){
   }
 }
 
-void lightStatus(){
+void handleStatus(){
   if (server.method() != HTTP_GET) {
     server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   } else {
-    String content = "\
-    {\
-      \"red\" : " + String(_redLit ? TRUE_STRING : FALSE_STRING) + ",\
-      \"green\" : " + String(_greenLit ? TRUE_STRING : FALSE_STRING) + ",\
-      \"party\" : " + String(_partyOn ? TRUE_STRING : FALSE_STRING) + ",\
-      \"bpm\" : " + String(_bpm) + "\
-    }";
-    
-    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
+    String content;
 
+    //todo build status json
+    serializeJson(_stateJson, content);
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
   }
 }
 
@@ -202,6 +215,7 @@ void handleTempo(){
       server.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN, "Missing body");
     }else{
       deserializeJson(doc, server.arg("plain"));
+      waitForSync();
       _bpm = doc["bpm"];
       Serial.println("BPM is now: " + String(_bpm));
       server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
@@ -229,9 +243,7 @@ void appleTouchIcon(){
   server.send_P(HTTP_OK, "image/png", favicon_io_apple_touch_icon_png, sizeof(favicon_io_apple_touch_icon_png));
 }
 
-void setup(void) {
-  _currentMillis = millis();
-  
+void setup(void) {  
   pinMode(RED_LIGHT, OUTPUT);
   pinMode(GREEN_LIGHT, OUTPUT);
 
@@ -269,13 +281,15 @@ void setup(void) {
   server.on("/api/green", handleGreen);
   server.on("/api/tempo", handleTempo);
   server.on("/api/party", handleParty);
-  server.on("/api/status", lightStatus);
+  server.on("/api/status", handleStatus);
   
   
   server.onNotFound(handleNotFound);
 
   server.begin();
   Serial.println("HTTP server started");
+
+  waitForSync();
 }
 
 void loop(void) {
