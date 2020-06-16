@@ -21,8 +21,10 @@ for file_name in content_file_names:
 	fout.write(singleLine)
 	fout.write("\";")
 
-os.system("xxd -i favicon_io/apple-touch-icon.png > apple_touch_icon_png.h")
-os.system("xxd -i favicon_io/favicon.ico > favicon_ico.h")
+image_file_names = ["favicon_io/apple-touch-icon.png", "favicon_io/favicon.ico"]
 
-os.system("sed -i '' 's/unsigned/const/g' apple_touch_icon_png.h")
-os.system("sed -i '' 's/unsigned/const/g' favicon_ico.h")
+for image_file_name in image_file_names:
+	header_file_name = image_file_name.replace('favicon_io/','').replace('.','_').replace('-','_') + ".h"
+
+	os.system("xxd -i " +image_file_name + " > " + header_file_name)
+	os.system("sed -i '' 's/unsigned/const/g' " + header_file_name)
