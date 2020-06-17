@@ -9,24 +9,28 @@ html, body, .grid-container { height: 100%; width:100%; margin: 0; }
   grid-template-areas: 'red' 'red' 'green' 'green';
 }
 
-.dark {
-	opacity: 25%;
+.dark-red {
+	background-color: #2B0104;
+}
+
+.bright-red {
+	background-color: #b00000;
+}
+
+.dark-green {
+	background-color: #072B07;
+}
+
+.bright-green {
+	background-color: #03b000;
 }
 
 #red {
 	grid-area: red;
-	background-color: #b00000;
 }
 
 #green {
 	grid-area: green;
-	background-color: #03b000;
-}
-
-.button {
-	width: 100%;
-	height: 100%;
-	opacity: 0%;
 }
 
 #circle-container {

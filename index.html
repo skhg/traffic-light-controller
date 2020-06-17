@@ -1,6 +1,8 @@
-<html>
+<!DOCTYPE html>
+<html lang='en'>
    <head>
       <title>Traffic Light</title>
+      <meta charset='UTF-8'>
       <meta name='apple-mobile-web-app-capable' content='yes'>
       <meta name='apple-mobile-web-app-status-bar-style' content='black'>
       <link rel='apple-touch-icon' sizes='180x180' href='/apple-touch-icon.png'>
@@ -8,10 +10,10 @@
       <script src='app.js'></script>
 	</head>
 
-	<body onload='setupLoop()'>
+	<body onload='app()'>
 		<div class='grid-container'>
-			<div id='red' class='dark' onclick='red()'></div>
-			<div id='green' class='dark' onclick='green()'></div>
+			<div id='red' class='dark-red' onclick='red()'></div>
+			<div id='green' class='dark-green' onclick='green()'></div>
 		</div>
 		<div id='circle-container'>
 		    <div id='circle' class='noParty' onclick='party()'>Party Mode</div>
