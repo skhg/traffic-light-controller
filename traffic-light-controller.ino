@@ -150,22 +150,28 @@ void handleNotFound() {
 
 void handleParty(){
   if(HTTP_SERVER.method() == HTTP_PUT) {
+    _partyOn = true;
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party On!");
     Serial.println("Party started");
-    _partyOn = true;
+    sendToWebSocketClients(partyJson());
   } else if (HTTP_SERVER.method() == HTTP_DELETE) {
+    _partyOn = false;
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party's Over");
     Serial.println("Party ended");
-    _partyOn = false;
+    sendToWebSocketClients(partyJson());
   } else if(HTTP_SERVER.method() == HTTP_GET){
-    String content;
-    StaticJsonDocument<JSON_OBJECT_SIZE(1)> partyJson;
-    partyJson["party"] = _partyOn;
-    serializeJson(partyJson, content);
-    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, partyJson());
   } else{
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
+}
+
+String partyJson(){
+  String content;
+  StaticJsonDocument<JSON_OBJECT_SIZE(1)> partyJson;
+  partyJson["party"] = _partyOn;
+  serializeJson(partyJson, content);
+  return content;
 }
 
 String clientIP(){
@@ -243,16 +249,21 @@ void handleTempo(){
       _bpm = bpmJson["bpm"];
       Serial.println("BPM is now: " + String(_bpm));
       HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
+      sendToWebSocketClients(tempoJson());
     }
   } else if (HTTP_SERVER.method() == HTTP_GET){
-    String content;
-    StaticJsonDocument<JSON_OBJECT_SIZE(1)> tempoJson;
-    tempoJson["bpm"] = _bpm;
-    serializeJson(tempoJson, content);
-    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, tempoJson());
   } else {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
+}
+
+String tempoJson(){
+  String content;
+  StaticJsonDocument<JSON_OBJECT_SIZE(1)> tempoJson;
+  tempoJson["bpm"] = _bpm;
+  serializeJson(tempoJson, content);
+  return content;
 }
 
 void favicon(){

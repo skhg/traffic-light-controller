@@ -38,6 +38,8 @@ function app(){
 function handleWebSocketMessage(event){
    var messageContents = JSON.parse(event.data);
    
+   console.debug(messageContents);
+   
    for(var key of Object.keys(messageContents)){
       state[key] = messageContents[key];
    }
