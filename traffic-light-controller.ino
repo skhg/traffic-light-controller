@@ -12,7 +12,6 @@
 #include <home_wifi.h>
 #include <ArduinoJson.h>
 #include <WebSocketsServer.h>
-#include <ezTime.h>
 
 // Static content includes. File contents generated from originals with prepareStaticContent.py
 #include "index_html.h"
@@ -48,7 +47,6 @@ int _bpm = 100;
 boolean _partyOn = false;
 unsigned long _currentMillis = millis();
 unsigned long _beatStartMillis = millis();
-String _beatStartEpoch = "0";
 int _rhythmStep = 0;
 
 const int RHYTHM_STEPS = 8;
@@ -82,12 +80,6 @@ void partyFlash(){
   }
 }
 
-String epochMillis(){
-  char buffer [3];
-  sprintf(buffer,"%03d",ms());
-  return String(now()) + buffer;
-}
-
 void rhythm(){
   int timingIntervalMilis = 60000 / (_bpm * 2);
   
@@ -95,7 +87,6 @@ void rhythm(){
   
   if(_currentMillis - _beatStartMillis > timingIntervalMilis){
     _beatStartMillis = _currentMillis;
-    _beatStartEpoch = epochMillis();
     
     if(_rhythmStep >= (RHYTHM_STEPS * 2) - 1){
       _rhythmStep = 0;
@@ -149,7 +140,6 @@ void handleParty(){
   if(HTTP_SERVER.method() == HTTP_PUT) {
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party On!");
     Serial.println("Party started");
-    waitForSync();
     _partyOn = true;
   } else if (HTTP_SERVER.method() == HTTP_DELETE) {
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party's Over");
@@ -217,7 +207,6 @@ void handleStatus(){
     statusJson["green"] = _greenLit;
     statusJson["red"] = _redLit;
     statusJson["party"] = _partyOn;
-    statusJson["beatEpoch"] = _beatStartEpoch;
     serializeJson(statusJson, content);
     
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
@@ -231,7 +220,6 @@ void handleTempo(){
     }else{
       StaticJsonDocument<JSON_OBJECT_SIZE(1) + 10> bpmJson;
       deserializeJson(bpmJson, HTTP_SERVER.arg("plain"));
-      waitForSync();
       _bpm = bpmJson["bpm"];
       Serial.println("BPM is now: " + String(_bpm));
       HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
@@ -308,8 +296,6 @@ void setup(void) {
 
   HTTP_SERVER.begin();
   Serial.println("HTTP server started");
-
-  waitForSync();
 }
 
 void loop(void) {
