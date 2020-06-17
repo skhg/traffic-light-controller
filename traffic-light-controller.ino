@@ -11,6 +11,7 @@
 #include <ESP8266WebServer.h>
 #include <home_wifi.h>
 #include <ArduinoJson.h>
+#include <ESPAsyncTCP.h>
 #include <WebSocketsServer.h>
 
 // Static content includes. File contents generated from originals with prepareStaticContent.py
