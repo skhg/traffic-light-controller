@@ -50,6 +50,7 @@ function visibilityHandler(visibilityChange){
    if(document.hidden){
       disconnect();
    }else{
+      refreshState();
       connect();
    }
 };
@@ -70,14 +71,14 @@ function updateScreen(){
    var redDiv = document.getElementById('red');
 
 	if(state['green']){
-		greenDiv.className = 'green';
+		greenDiv.className = 'bright-green';
 	} else {
-		greenDiv.className = 'green dark';
+		greenDiv.className = 'dark-green';
 	}
 	if(state['red']){
-		redDiv.className = 'red';
+		redDiv.className = 'bright-red';
 	} else {
-		redDiv.className = 'red dark';
+		redDiv.className = 'dark-red';
 	}
    if(state['party']){
       circleDiv.className = 'party';
