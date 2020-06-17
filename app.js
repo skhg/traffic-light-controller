@@ -7,38 +7,55 @@ var state = {
    'red' : false,
    'green' : false
 };
+var webSocket;
 
 function connect() {
-   var ws = new WebSocket(webSocketUrl);
-   ws.onopen = function() {
-      console.log('WebSocket connected.');
+   webSocket = new WebSocket(webSocketUrl);
+   webSocket.onopen = function() {
+      console.debug('WebSocket connected.');
    };
 
-  ws.onmessage = handleWebSocketMessage;
+   webSocket.onmessage = handleWebSocketMessage;
 
-  ws.onclose = function(e) {
-    console.log('WebSocket is closed. Reconnect will be attempted in 1 second.', e.reason);
-    setTimeout(function() {
-      refreshState();
-      connect();
-    }, 1000);
+   webSocket.onclose = function(e) {
+   if(!document.hidden){
+      console.debug('WebSocket is closed. Reconnect will be attempted in 1 second.', e.reason);
+      setTimeout(function() {
+         refreshState();
+         connect();
+      }, 1000);
+   }
   };
 
-   ws.onerror = function(err) {
+   webSocket.onerror = function(err) {
       console.error('Closing socket due to error.');
-      ws.close();
+      disconnect();
    };
 };
 
 function app(){
    refreshState();
    connect();
+   document.addEventListener('visibilitychange', visibilityHandler);
+   window.onunload = window.onbeforeunload = disconnect();
+};
+
+function disconnect(){
+   if(webSocket.readyState === WebSocket.OPEN){
+      webSocket.close();
+   }
+};
+
+function visibilityHandler(visibilityChange){
+   if(document.hidden){
+      disconnect();
+   }else{
+      connect();
+   }
 };
 
 function handleWebSocketMessage(event){
    var messageContents = JSON.parse(event.data);
-   
-   console.debug(messageContents);
    
    for(var key of Object.keys(messageContents)){
       state[key] = messageContents[key];
