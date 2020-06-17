@@ -23,8 +23,6 @@
 
 const String HOST_NAME = "traffic-light";
 
-const String FALSE_STRING = "false";
-const String TRUE_STRING = "true";
 const String EMPTY_STRING = "";
 
 const String CONTENT_TYPE_TEXT_PLAIN = "text/plain";
@@ -43,7 +41,6 @@ const String METHOD_NOT_ALLOWED_MESSAGE = "Method Not Allowed";
 
 ESP8266WebServer server(80);
 WebSocketsServer webSocket(81);
-StaticJsonDocument<200> doc; //todo this should not be global because of https://arduinojson.org/v6/faq/i-found-a-memory-leak-in-the-library/
 
 boolean _redLit = false;
 boolean _greenLit = false;
@@ -159,7 +156,11 @@ void handleParty(){
     Serial.println("Party ended");
     _partyOn = false;
   } else if(server.method() == HTTP_GET){
-    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, "{ \"party\": " + String(_partyOn ? TRUE_STRING : FALSE_STRING) + "}");
+    String content;
+    StaticJsonDocument<JSON_OBJECT_SIZE(1)> partyJson;
+    partyJson["party"] = _partyOn;
+    serializeJson(partyJson, content);
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
   } else{
     server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
@@ -177,7 +178,11 @@ void handleRed(){
     lightSwitch(RED_LIGHT, false);
     server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   } else if (server.method() == HTTP_GET){
-    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, "{ \"lit\": " + String(_redLit ? TRUE_STRING : FALSE_STRING) + "}");
+    String content;
+    StaticJsonDocument<JSON_OBJECT_SIZE(1)> redJson;
+    redJson["red"] = _redLit;
+    serializeJson(redJson, content);
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
   } else {
     server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
@@ -191,7 +196,11 @@ void handleGreen(){
     lightSwitch(GREEN_LIGHT, false);
     server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   }else if(server.method() == HTTP_GET){
-    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, "{ \"lit\": " + String(_greenLit ? TRUE_STRING : FALSE_STRING) + "}");
+    String content;
+    StaticJsonDocument<JSON_OBJECT_SIZE(1)> greenJson;
+    greenJson["green"] = _greenLit;
+    serializeJson(greenJson, content);
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
   }else{
     server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
@@ -203,8 +212,14 @@ void handleStatus(){
   } else {
     String content;
 
-    //todo build status json
-    serializeJson(_stateJson, content);
+    StaticJsonDocument<JSON_OBJECT_SIZE(5) + 50> statusJson;
+    statusJson["bpm"] = _bpm;
+    statusJson["green"] = _greenLit;
+    statusJson["red"] = _redLit;
+    statusJson["party"] = _partyOn;
+    statusJson["beatEpoch"] = _beatStartEpoch;
+    serializeJson(statusJson, content);
+    
     server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
   }
 }
@@ -214,14 +229,19 @@ void handleTempo(){
     if(server.hasArg("plain") == false) {
       server.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN, "Missing body");
     }else{
-      deserializeJson(doc, server.arg("plain"));
+      StaticJsonDocument<JSON_OBJECT_SIZE(1) + 10> bpmJson;
+      deserializeJson(bpmJson, server.arg("plain"));
       waitForSync();
-      _bpm = doc["bpm"];
+      _bpm = bpmJson["bpm"];
       Serial.println("BPM is now: " + String(_bpm));
       server.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
     }
   } else if (server.method() == HTTP_GET){
-    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, "{ \"bpm\": " + String(_bpm) + "}");
+    String content;
+    StaticJsonDocument<JSON_OBJECT_SIZE(1)> tempoJson;
+    tempoJson["bpm"] = _bpm;
+    serializeJson(tempoJson, content);
+    server.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
   } else {
     server.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
