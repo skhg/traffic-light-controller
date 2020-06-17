@@ -53,18 +53,29 @@ const int RHYTHM_STEPS = 8;
 const int RHYTHM_PATTERN[] = {RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, BOTH_FLASH, BOTH_FLASH};
 
 void sendToWebSocketClients(String webSocketMessage){
-  for(int i=0; i < WEB_SOCKET_SERVER.connectedClients(false); i++){
-    WEB_SOCKET_SERVER.sendTXT(i, webSocketMessage);
-  }
+  WEB_SOCKET_SERVER.broadcastTXT(webSocketMessage);
 }
 
 void lightSwitch(int light, boolean newState){
-  switch(light){
-    case RED_LIGHT: _redLit = newState; break;
-    case GREEN_LIGHT: _greenLit = newState; break;
-  }
-    
   digitalWrite(light, !newState); // because LOW means ON
+  
+  switch(light){
+    case RED_LIGHT: {
+      if(newState != _redLit){
+        _redLit = newState;
+        sendToWebSocketClients(redLightJson());
+      }
+      break;
+    }
+    case GREEN_LIGHT: {
+      if(newState != _greenLit){
+        _greenLit = newState;
+        sendToWebSocketClients(greenLightJson());
+      }
+      
+      break;
+    }
+  }
 }
 
 void partyFlash(){
@@ -168,14 +179,26 @@ void handleRed(){
     lightSwitch(RED_LIGHT, false);
     HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   } else if (HTTP_SERVER.method() == HTTP_GET){
-    String content;
-    StaticJsonDocument<JSON_OBJECT_SIZE(1)> redJson;
-    redJson["red"] = _redLit;
-    serializeJson(redJson, content);
-    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, redLightJson());
   } else {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
+}
+
+String redLightJson(){
+  String content;
+  StaticJsonDocument<JSON_OBJECT_SIZE(1)> redJson;
+  redJson["red"] = _redLit;
+  serializeJson(redJson, content);
+  return content;
+}
+
+String greenLightJson(){
+  String content;
+  StaticJsonDocument<JSON_OBJECT_SIZE(1)> greenJson;
+  greenJson["green"] = _greenLit;
+  serializeJson(greenJson, content);
+  return content;
 }
 
 void handleGreen(){
@@ -186,11 +209,7 @@ void handleGreen(){
     lightSwitch(GREEN_LIGHT, false);
     HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   }else if(HTTP_SERVER.method() == HTTP_GET){
-    String content;
-    StaticJsonDocument<JSON_OBJECT_SIZE(1)> greenJson;
-    greenJson["green"] = _greenLit;
-    serializeJson(greenJson, content);
-    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, greenLightJson());
   }else{
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
@@ -251,6 +270,23 @@ void appleTouchIcon(){
   HTTP_SERVER.send_P(HTTP_OK, "image/png", favicon_io_apple_touch_icon_png, sizeof(favicon_io_apple_touch_icon_png));
 }
 
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  IPAddress ip = WEB_SOCKET_SERVER.remoteIP(num);
+
+  switch(type) {
+    case WStype_DISCONNECTED: {
+      Serial.println("WebSocket client disconnected.");
+      break;
+    }
+    case WStype_CONNECTED: {
+      Serial.print("WebSocket client at ");
+      Serial.print(ip);
+      Serial.println(" connected.");
+      break;
+    }
+  }
+}  
+
 void setup(void) {  
   pinMode(RED_LIGHT, OUTPUT);
   pinMode(GREEN_LIGHT, OUTPUT);
@@ -296,10 +332,15 @@ void setup(void) {
 
   HTTP_SERVER.begin();
   Serial.println("HTTP server started");
+
+  WEB_SOCKET_SERVER.begin();
+  WEB_SOCKET_SERVER.enableHeartbeat(1000, 1000, 1); // Disconnect after a single failed heartbeat
+  WEB_SOCKET_SERVER.onEvent(webSocketEvent);
 }
 
 void loop(void) {
   HTTP_SERVER.handleClient();
+  WEB_SOCKET_SERVER.loop();
   rhythm();
   
   if(_partyOn){

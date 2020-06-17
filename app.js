@@ -1,32 +1,68 @@
 var serverAddr = '/api';
-var greenOn = true;
-var redOn = true;
 var refreshQuery = new XMLHttpRequest();
-var isParty = false;
-var bpm = 100;
-
-function app(){
-	setInterval(refreshState, 500);
+var webSocketUrl = 'ws://' + window.location.host + ':81';
+var state = {
+   'bpm' : 100,
+   'party' : false,
+   'red' : false,
+   'green' : false
 };
 
-function updateColourBlocks(){
+function connect() {
+   var ws = new WebSocket(webSocketUrl);
+   ws.onopen = function() {
+      console.log('WebSocket connected.');
+   };
+
+  ws.onmessage = handleWebSocketMessage;
+
+  ws.onclose = function(e) {
+    console.log('WebSocket is closed. Reconnect will be attempted in 1 second.', e.reason);
+    setTimeout(function() {
+      refreshState();
+      connect();
+    }, 1000);
+  };
+
+   ws.onerror = function(err) {
+      console.error('Closing socket due to error.');
+      ws.close();
+   };
+};
+
+function app(){
+   refreshState();
+   connect();
+};
+
+function handleWebSocketMessage(event){
+   var messageContents = JSON.parse(event.data);
+   
+   for(var key of Object.keys(messageContents)){
+      state[key] = messageContents[key];
+   }
+
+   updateScreen();
+};
+
+function updateScreen(){
    var circleDiv = document.getElementById('circle');
    var greenDiv = document.getElementById('green');
    var redDiv = document.getElementById('red');
 
-	if(greenOn){
+	if(state['green']){
 		greenDiv.className = 'green';
 	} else {
 		greenDiv.className = 'green dark';
 	}
-	if(redOn){
+	if(state['red']){
 		redDiv.className = 'red';
 	} else {
 		redDiv.className = 'red dark';
 	}
-   if(isParty){
+   if(state['party']){
       circleDiv.className = 'party';
-      circleDiv.innerHTML = '' + bpm + ' BPM';
+      circleDiv.innerHTML = '' + state['bpm'] + ' BPM';
    }else{
       circleDiv.className = 'noParty';
       circleDiv.innerHTML = 'Party Mode';
@@ -39,12 +75,8 @@ function refreshState(){
 	refreshQuery.onreadystatechange = function(){
 		if (refreshQuery.readyState == XMLHttpRequest.DONE) {
 			if (refreshQuery.status == 200) {
-				var result = JSON.parse(refreshQuery.responseText);
-				greenOn = result.green;
-				redOn = result.red;
-            isParty = result.party;
-            bpm = result.bpm;
-				updateColourBlocks();
+            state =  JSON.parse(refreshQuery.responseText);
+				updateScreen();
 			}
 		}
 	};
@@ -54,34 +86,34 @@ function refreshState(){
 function green(){
 	refreshQuery.abort();
 	var xhr = new XMLHttpRequest();
-	if(greenOn){
+	if(state['green']){
 		xhr.open('DELETE', serverAddr + '/green', true);
 	}else{
 		xhr.open('PUT', serverAddr + '/green', true);
 	}
 	
 		xhr.send();
-		greenOn = !greenOn;
-		updateColourBlocks();
+		state['green'] = !state['green'];
+		updateScreen();
 };
 
 function red(){
 	refreshQuery.abort();
 	var xhr = new XMLHttpRequest();
-	if(redOn){
+	if(state['red']){
 		xhr.open('DELETE', serverAddr + '/red', true);
 	}else{
 		xhr.open('PUT', serverAddr + '/red', true);
 	}
 	
 		xhr.send();
-		redOn = !redOn;
-		updateColourBlocks();
+		state['red'] = !state['red'];
+		updateScreen();
 };
 
 function party(){
    refreshQuery.abort();
-	if(isParty){
+	if(state['party']){
 		var xhr = new XMLHttpRequest();
 		xhr.open('DELETE', serverAddr + '/party', true);
 	      xhr.send();
@@ -90,6 +122,6 @@ function party(){
 		xhr.open('PUT', serverAddr + '/party', true);
 		   xhr.send();
 	}
-	isParty = !isParty;
-   updateColourBlocks();
+	state['party'] = !state['party'];
+   updateScreen();
 };
