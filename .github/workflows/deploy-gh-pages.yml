@@ -3,19 +3,18 @@ name: Deploy the static files to GitHub Pages
 on:
   push:
     branches:
-      - 'master'
+      - master
 
 jobs:
-  build:
-    name: Build
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
-    - name: deploy docs
-      uses: ./
-      with:
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        remote_url: https://github.com/appleboy/gh-pages-action.git
+    - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3.6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
