@@ -44,6 +44,11 @@ unsigned long _currentMillis = millis();
 unsigned long _beatStartMillis = millis();
 int _rhythmStep = 0;
 
+String _currentTitle = "";
+String _currentArtist = "";
+String _currentAlbum = "";
+
+
 const int RHYTHM_STEPS = 8;
 const int RHYTHM_PATTERN[] = {RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, BOTH_FLASH, BOTH_FLASH};
 
@@ -245,6 +250,40 @@ String tempoJson(){
   return content;
 }
 
+void handleSong(){
+  if(HTTP_SERVER.method() == HTTP_PUT){
+    if(HTTP_SERVER.hasArg("plain") == false) {
+      HTTP_SERVER.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN, "Missing body");
+    }else{
+      StaticJsonDocument<JSON_OBJECT_SIZE(3) + 1000> newSongJson;
+      deserializeJson(newSongJson, HTTP_SERVER.arg("plain"));
+      const char* artist = newSongJson["artist"];
+      _currentArtist = artist;
+      const char* album = newSongJson["album"];
+      _currentAlbum = album;
+      const char* title = newSongJson["title"];
+      _currentTitle = title;
+      Serial.println("Song is now: " + _currentTitle + " from "+ _currentAlbum + " by " + _currentArtist);
+      HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
+      sendToWebSocketClients(songJson());
+    }
+  } else if (HTTP_SERVER.method() == HTTP_GET){
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, songJson());
+  } else {
+    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
+  }
+}
+
+String songJson(){
+  String content;
+  StaticJsonDocument<JSON_OBJECT_SIZE(3)> changedSongJson;
+  changedSongJson["title"] = _currentTitle;
+  changedSongJson["artist"] = _currentArtist;
+  changedSongJson["album"] = _currentAlbum;
+  serializeJson(changedSongJson, content);
+  return content;
+}
+
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
   IPAddress ip = WEB_SOCKET_SERVER.remoteIP(num);
 
@@ -296,7 +335,7 @@ void setup(void) {
   HTTP_SERVER.on("/api/tempo", handleTempo);
   HTTP_SERVER.on("/api/party", handleParty);
   HTTP_SERVER.on("/api/status", handleStatus);
-  
+  HTTP_SERVER.on("/api/song", handleSong);
   
   HTTP_SERVER.onNotFound(handleNotFound);
 
