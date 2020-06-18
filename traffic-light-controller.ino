@@ -276,7 +276,7 @@ void handleSong(){
 
 String songJson(){
   String content;
-  StaticJsonDocument<JSON_OBJECT_SIZE(3)> changedSongJson;
+  StaticJsonDocument<JSON_OBJECT_SIZE(3) + 1000> changedSongJson;
   changedSongJson["title"] = _currentTitle;
   changedSongJson["artist"] = _currentArtist;
   changedSongJson["album"] = _currentAlbum;
