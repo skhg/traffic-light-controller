@@ -15,11 +15,7 @@
 #include <WebSocketsServer.h>
 
 // Static content includes. File contents generated from originals with prepareStaticContent.py
-#include "index_html.h"
-#include "apple_touch_icon_png.h"
-#include "favicon_ico.h"
-#include "app_js.h"
-#include "style_css.h"
+#include "index_html_gz.h"
 
 const String HOST_NAME = "traffic-light";
 
@@ -28,8 +24,6 @@ const String EMPTY_STRING = "";
 const String CONTENT_TYPE_TEXT_PLAIN = "text/plain";
 const String CONTENT_TYPE_APPLICATION_JSON = "application/json";
 const String CONTENT_TYPE_TEXT_HTML = "text/html";
-const String CONTENT_TYPE_APPLICATION_JAVASCRIPT = "application/javascript";
-const String CONTENT_TYPE_TEXT_CSS = "text/css";
 
 const int HTTP_OK = 200;
 const int HTTP_NO_CONTENT = 204;
@@ -114,23 +108,8 @@ void htmlRootContent() {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
     return;
   }
-  HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_TEXT_HTML, INDEX_HTML);
-}
-
-void appJsContent(){
-  if (HTTP_SERVER.method() != HTTP_GET) {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
-    return;
-  }
-  HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JAVASCRIPT, APP_JS);
-}
-
-void styleCssContent(){
-  if (HTTP_SERVER.method() != HTTP_GET) {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
-    return;
-  }
-  HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_TEXT_CSS, STYLE_CSS);
+  HTTP_SERVER.sendHeader("Content-Encoding", "gzip");
+  HTTP_SERVER.send_P(HTTP_OK, "text/html", public_index_html_gz, sizeof(public_index_html_gz));
 }
 
 void handleNotFound() {
@@ -266,22 +245,6 @@ String tempoJson(){
   return content;
 }
 
-void favicon(){
-  if (HTTP_SERVER.method() != HTTP_GET) {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
-    return;
-  }
-  HTTP_SERVER.send_P(HTTP_OK, "image/x-icon", favicon_io_favicon_ico, sizeof(favicon_io_favicon_ico));
-}
-
-void appleTouchIcon(){
-  if (HTTP_SERVER.method() != HTTP_GET) {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
-    return;
-  }
-  HTTP_SERVER.send_P(HTTP_OK, "image/png", favicon_io_apple_touch_icon_png, sizeof(favicon_io_apple_touch_icon_png));
-}
-
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
   IPAddress ip = WEB_SOCKET_SERVER.remoteIP(num);
 
@@ -327,11 +290,6 @@ void setup(void) {
   Serial.println("/");
 
   HTTP_SERVER.on("/", htmlRootContent);
-  HTTP_SERVER.on("/app.js", appJsContent);
-  HTTP_SERVER.on("/style.css", styleCssContent);
-
-  HTTP_SERVER.on("/favicon.ico", favicon);
-  HTTP_SERVER.on("/apple-touch-icon.png", appleTouchIcon);
   
   HTTP_SERVER.on("/api/red", handleRed);
   HTTP_SERVER.on("/api/green", handleGreen);
