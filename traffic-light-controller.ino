@@ -310,7 +310,6 @@ void setup(void) {
 
 void loop(void) {
   HTTP_SERVER.handleClient();
-  WEB_SOCKET_SERVER.loop();
   rhythm();
   
   if(_partyOn){
