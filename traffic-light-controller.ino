@@ -269,6 +269,13 @@ void handleSong(){
     }
   } else if (HTTP_SERVER.method() == HTTP_GET){
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, songJson());
+  } else if (HTTP_SERVER.method() == HTTP_DELETE){
+    _currentArtist = "";
+    _currentAlbum = "";
+    _currentTitle = "";
+    Serial.println("Song ended");
+    HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
+    sendToWebSocketClients(songJson());
   } else {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
   }
