@@ -1,4 +1,9 @@
-html, body, .grid-container { height: 100%; width:100%; margin: 0; }
+html, body, .grid-container {
+	background-color: #000;
+	height: 100%;
+	width:100%;
+	margin: 0;
+}
 
 .grid-container {
 	background-color: #000000;
@@ -27,6 +32,7 @@ html, body, .grid-container { height: 100%; width:100%; margin: 0; }
 
 #red {
 	grid-area: red;
+	position: relative;
 }
 
 #green {
@@ -44,8 +50,8 @@ html, body, .grid-container { height: 100%; width:100%; margin: 0; }
 
 #circle {
 	font-family: 'Menlo', sans-serif;
- font-style: italic;
- font-weight: bold;
+	font-style: italic;
+	font-weight: bold;
 	width: 600px;
 	height: 600px;
 	border-radius: 50%;
@@ -63,6 +69,24 @@ html, body, .grid-container { height: 100%; width:100%; margin: 0; }
 	color: #000;
 	background: #fff;
 	-webkit-animation: rotation 2s infinite linear;
+}
+
+.sensor {
+	padding-left: 30px;
+	user-select: none;
+	font-family: 'Menlo', sans-serif;
+	color: #404040;
+	font-size: 60px;
+}
+
+#green-sensor {
+	padding-top: 30px;
+}
+
+#red-sensor {
+	position: absolute;
+	bottom: 0px;
+	padding-bottom: 30px;
 }
 
 @-webkit-keyframes rotation {

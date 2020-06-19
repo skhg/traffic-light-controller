@@ -5,7 +5,9 @@ var state = {
    'bpm' : 100,
    'party' : false,
    'red' : false,
-   'green' : false
+   'green' : false,
+   'redTemperature' : 0.0,
+   'greenTemperature' : 0.0
 };
 var webSocket;
 
@@ -69,6 +71,8 @@ function updateScreen(){
    var circleDiv = document.getElementById('circle');
    var greenDiv = document.getElementById('green');
    var redDiv = document.getElementById('red');
+   var redSensorDiv = document.getElementById('red-sensor');
+   var greenSensorDiv = document.getElementById('green-sensor');
 
 	if(state['green']){
 		greenDiv.className = 'bright-green';
@@ -87,6 +91,9 @@ function updateScreen(){
       circleDiv.className = 'noParty';
       circleDiv.innerHTML = 'Party Mode';
    }
+
+   greenSensorDiv.innerHTML = "" + Math.round(state['greenTemperature']) + "°C";
+   redSensorDiv.innerHTML = "" + Math.round(state['redTemperature']) + "°C";
 };
 
 function refreshState(){
