@@ -15,7 +15,6 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   delay(5000);
 
   Serial.println("Red Sensor");
@@ -37,5 +36,4 @@ void loop() {
   Serial.print(" %, Temp: ");
   Serial.print(temp);
   Serial.println(" Celsius");
-  
 }
