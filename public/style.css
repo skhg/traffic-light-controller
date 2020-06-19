@@ -1,4 +1,9 @@
-html, body, .grid-container { height: 100%; width:100%; margin: 0; }
+html, body, .grid-container {
+	background-color: #000;
+	height: 100%;
+	width:100%;
+	margin: 0;
+}
 
 .grid-container {
 	background-color: #000000;
