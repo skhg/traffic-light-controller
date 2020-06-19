@@ -1,9 +1,13 @@
 #define RED_LIGHT D6
 #define GREEN_LIGHT D5
+#define SENSOR_RED_PIN D3
+#define SENSOR_GREEN_PIN D4
 
 #define RED_FLASH 0
 #define GREEN_FLASH 1
 #define BOTH_FLASH 2
+
+#define DHT_SENSOR_TYPE DHT11
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -13,6 +17,7 @@
 #include <ArduinoJson.h>
 #include <ESPAsyncTCP.h>
 #include <WebSocketsServer.h>
+#include <DHT.h>
 
 // Static content includes. File contents generated from originals with prepareStaticContent.py
 #include "index_html_gz.h"
@@ -33,8 +38,12 @@ const int HTTP_BAD_REQUEST = 400;
 
 const String METHOD_NOT_ALLOWED_MESSAGE = "Method Not Allowed";
 
+const int TEMPERATURE_READ_INTERVAL_MILLIS = 10000;
+
 ESP8266WebServer HTTP_SERVER(80);
 WebSocketsServer WEB_SOCKET_SERVER(81);
+DHT SENSOR_RED(SENSOR_RED_PIN, DHT_SENSOR_TYPE);
+DHT SENSOR_GREEN(SENSOR_GREEN_PIN, DHT_SENSOR_TYPE);
 
 boolean _redLit = false;
 boolean _greenLit = false;
@@ -42,12 +51,17 @@ int _bpm = 100;
 boolean _partyOn = false;
 unsigned long _currentMillis = millis();
 unsigned long _beatStartMillis = millis();
+unsigned long _temperatureReadMillis = millis();
 int _rhythmStep = 0;
 
 String _currentTitle = "";
 String _currentArtist = "";
 String _currentAlbum = "";
 
+double _redTemperature = 0.0;
+double _redHumidity = 0.0;
+double _greenTemperature = 0.0;
+double _greenHumidity = 0.0;
 
 const int RHYTHM_STEPS = 8;
 const int RHYTHM_PATTERN[] = {RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, BOTH_FLASH, BOTH_FLASH};
@@ -89,6 +103,33 @@ void partyFlash(){
       case BOTH_FLASH: lightSwitch(RED_LIGHT, true); lightSwitch(GREEN_LIGHT, true); break;
     }
   }
+}
+
+void readSensors(){
+  _currentMillis = millis();
+
+  if(_currentMillis - _temperatureReadMillis > TEMPERATURE_READ_INTERVAL_MILLIS){
+    _temperatureReadMillis = _currentMillis;
+    
+    _redHumidity = SENSOR_RED.readHumidity();
+    _redTemperature = SENSOR_RED.readTemperature();
+
+    _greenHumidity = SENSOR_GREEN.readHumidity();
+    _greenTemperature = SENSOR_GREEN.readTemperature();
+
+    sendToWebSocketClients(sensorsJson());
+  }
+}
+
+String sensorsJson(){
+  String content;
+  StaticJsonDocument<JSON_OBJECT_SIZE(4)> sensorsJson;
+  sensorsJson["redTemperature"] = _redTemperature;
+  sensorsJson["greenTemperature"] = _greenTemperature;
+  sensorsJson["greenHumidity"] = _greenHumidity;
+  sensorsJson["redHumidity"] = _redHumidity;
+  serializeJson(sensorsJson, content);
+  return content;
 }
 
 void rhythm(){
@@ -212,11 +253,18 @@ void handleStatus(){
   } else {
     String content;
 
-    StaticJsonDocument<JSON_OBJECT_SIZE(5) + 50> statusJson;
+    StaticJsonDocument<JSON_OBJECT_SIZE(8) + 1000> statusJson;
     statusJson["bpm"] = _bpm;
     statusJson["green"] = _greenLit;
     statusJson["red"] = _redLit;
     statusJson["party"] = _partyOn;
+    statusJson["title"] = _currentTitle;
+    statusJson["artist"] = _currentArtist;
+    statusJson["album"] = _currentAlbum;
+    statusJson["redTemperature"] = _redTemperature;
+    statusJson["greenTemperature"] = _greenTemperature;
+    statusJson["greenHumidity"] = _greenHumidity;
+    statusJson["redHumidity"] = _redHumidity;
     serializeJson(statusJson, content);
     
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, content);
@@ -308,14 +356,18 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
   }
 }  
 
-void setup(void) {  
+void setup(void) {
+  Serial.begin(115200);
+  
+  SENSOR_RED.begin();
+  SENSOR_GREEN.begin();
+  
   pinMode(RED_LIGHT, OUTPUT);
   pinMode(GREEN_LIGHT, OUTPUT);
 
   digitalWrite(RED_LIGHT, HIGH);
   digitalWrite(GREEN_LIGHT, HIGH);
   
-  Serial.begin(115200);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   WiFi.hostname(HOST_NAME);
 
@@ -357,6 +409,7 @@ void setup(void) {
 void loop(void) {
   HTTP_SERVER.handleClient();
   rhythm();
+  readSensors();
   
   if(_partyOn){
     partyFlash();
