@@ -13,14 +13,14 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266HTTPClient.h>
 #include <home_wifi.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncTCP.h>
 #include <WebSocketsServer.h>
 #include <DHT.h>
 
-// Static content includes. File contents generated from originals with prepareStaticContent.py
-#include "index_html_gz.h"
+const String STATIC_CONTENT_INDEX_LOCATION = "http://jackhiggins.ie/traffic-light-controller/";
 
 const String HOST_NAME = "traffic-light";
 
@@ -40,6 +40,8 @@ const String METHOD_NOT_ALLOWED_MESSAGE = "Method Not Allowed";
 
 const int TEMPERATURE_READ_INTERVAL_MILLIS = 10000;
 
+WiFiClient WIFI_CLIENT;
+HTTPClient HTTP_CLIENT;
 ESP8266WebServer HTTP_SERVER(80);
 WebSocketsServer WEB_SOCKET_SERVER(81);
 DHT SENSOR_RED(SENSOR_RED_PIN, DHT_SENSOR_TYPE);
@@ -146,7 +148,6 @@ void rhythm(){
       _rhythmStep++;
     }
   }
-  
 }
 
 void htmlRootContent() {
@@ -154,8 +155,12 @@ void htmlRootContent() {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
     return;
   }
-  HTTP_SERVER.sendHeader("Content-Encoding", "gzip");
-  HTTP_SERVER.send_P(HTTP_OK, "text/html", public_index_html_gz, sizeof(public_index_html_gz));
+
+  //Fetch content from source and forward it
+  HTTP_CLIENT.begin(WIFI_CLIENT, STATIC_CONTENT_INDEX_LOCATION);
+  HTTP_CLIENT.GET();
+  
+  HTTP_SERVER.send(HTTP_OK, "text/html", HTTP_CLIENT.getString());
 }
 
 void handleNotFound() {
