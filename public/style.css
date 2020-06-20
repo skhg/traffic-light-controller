@@ -1,4 +1,5 @@
 html, body, .grid-container {
+	position: fixed;
 	background-color: #000;
 	height: 100%;
 	width:100%;
@@ -71,12 +72,28 @@ html, body, .grid-container {
 	-webkit-animation: rotation 2s infinite linear;
 }
 
-.sensor {
-	padding-left: 30px;
+.infoText {
 	user-select: none;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-o-user-select: none;
 	font-family: 'Menlo', sans-serif;
 	color: #404040;
-	font-size: 60px;
+	font-size: 30px;
+}
+
+.sensor {
+	padding-left: 55px;
+}
+
+#playing-song{
+	padding-right: 55px;
+	padding-bottom: 55px;
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	text-align: right;
 }
 
 #green-sensor {

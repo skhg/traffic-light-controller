@@ -1,14 +1,7 @@
-var serverAddr = '/api';
-var refreshQuery = new XMLHttpRequest();
-var webSocketUrl = 'ws://' + window.location.host + ':81';
-var state = {
-   'bpm' : 100,
-   'party' : false,
-   'red' : false,
-   'green' : false,
-   'redTemperature' : 0.0,
-   'greenTemperature' : 0.0
-};
+var serverAddr;
+var refreshQuery;
+var webSocketUrl;
+var state;
 var webSocket;
 
 function connect() {
@@ -36,10 +29,36 @@ function connect() {
 };
 
 function app(){
-   refreshState();
-   connect();
-   document.addEventListener('visibilitychange', visibilityHandler);
-   window.onunload = window.onbeforeunload = disconnect();
+    serverAddr = '/api';
+    state = {
+        'bpm' : 100,
+        'party' : false,
+        'red' : false,
+        'green' : false,
+        'redTemperature' : 0.0,
+        'greenTemperature' : 0.0,
+        'title': '',
+        'album': '',
+        'artist': ''
+    };
+
+    var circleDiv = document.getElementById('circle');
+    var greenDiv = document.getElementById('green');
+    var redDiv = document.getElementById('red');
+
+    var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+    var eventName = supportsTouch ? 'touchstart' : 'click';
+
+    circleDiv.addEventListener(eventName, party);
+    greenDiv.addEventListener(eventName, green);
+    redDiv.addEventListener(eventName, red);
+
+    webSocketUrl = 'ws://' + window.location.host + ':81';
+    refreshQuery = new XMLHttpRequest();
+    refreshState();
+    connect();
+    document.addEventListener('visibilitychange', visibilityHandler);
+    window.onunload = window.onbeforeunload = disconnect();
 };
 
 function disconnect(){
@@ -48,7 +67,7 @@ function disconnect(){
    }
 };
 
-function visibilityHandler(visibilityChange){
+function visibilityHandler(){
    if(document.hidden){
       disconnect();
    }else{
@@ -73,6 +92,7 @@ function updateScreen(){
    var redDiv = document.getElementById('red');
    var redSensorDiv = document.getElementById('red-sensor');
    var greenSensorDiv = document.getElementById('green-sensor');
+   var playingSongDiv = document.getElementById('playing-song');
 
 	if(state['green']){
 		greenDiv.className = 'bright-green';
@@ -94,6 +114,11 @@ function updateScreen(){
 
    greenSensorDiv.innerHTML = "" + Math.round(state['greenTemperature']) + "°C";
    redSensorDiv.innerHTML = "" + Math.round(state['redTemperature']) + "°C";
+
+    var artistLine = state.artist.length === 0 ? "" : "" + state["artist"] + "<br/>";
+    var titleLine = state.title.length === 0 ? "" : "&quot;" + state['title'] + "&quot;" + "<br/>";
+    var albumLine = state.album.length === 0 ? "" : "" + state["album"];
+   playingSongDiv.innerHTML = artistLine + titleLine + albumLine;
 };
 
 function refreshState(){
