@@ -14,11 +14,8 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Replace version string
-      uses: jacobtomlinson/gha-find-replace@0.1.1
-      with:
-        find: "version=latest"
-        replace: "version=$GITHUB_CONTEXT"
-        include: "public/index.html"
+      run: |
+        sed -i "" "s/version=latest/version=$GITHUB_SHA/g" public/index.html
       env:
         GITHUB_CONTEXT: ${{ github.sha }}
 
