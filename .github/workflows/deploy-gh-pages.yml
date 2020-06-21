@@ -14,9 +14,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Replace version string
+      uses: jacobtomlinson/gha-find-replace@master
+      with:
+        find: "version=latest"
+        replace: "version=$GITHUB_CONTEXT"
+        include: "public/index.html"
       env:
         GITHUB_CONTEXT: ${{ github.sha }}
-      run: echo "$GITHUB_CONTEXT"
 
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3.6.1
