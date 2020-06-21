@@ -15,7 +15,7 @@ jobs:
 
     - name: Replace version string
       run: |
-        sed -i "s/version=latest/version=$GITHUB_SHA/g" public/index.html
+        sed -i "s/version=latest/version=$GITHUB_SHA/g" webapp/index.html
       env:
         GITHUB_CONTEXT: ${{ github.sha }}
 
@@ -23,4 +23,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3.6.1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public
+        publish_dir: ./webapp
