@@ -116,7 +116,7 @@ function updateScreen(){
    redSensorDiv.innerHTML = "" + Math.round(state['redTemperature']) + "°C";
 
     var artistLine = state.artist.length === 0 ? "" : "" + state["artist"] + "<br/>";
-    var titleLine = state.title.length === 0 ? "" : "&quot;" + state['title'] + "&quot;" + "<br/>";
+    var titleLine = state.title.length === 0 ? "" : "<i>" + state['title'] + "</i>" + "<br/>";
     var albumLine = state.album.length === 0 ? "" : "" + state["album"];
    playingSongDiv.innerHTML = artistLine + titleLine + albumLine;
 };
