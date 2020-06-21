@@ -159,7 +159,8 @@ void htmlRootContent() {
   //Fetch content from source and forward it
   HTTP_CLIENT.begin(WIFI_CLIENT, STATIC_CONTENT_INDEX_LOCATION);
   HTTP_CLIENT.GET();
-  
+
+  HTTP_SERVER.sendHeader("Cache-Control", "no-cache");
   HTTP_SERVER.send(HTTP_OK, "text/html", HTTP_CLIENT.getString());
 }
 
