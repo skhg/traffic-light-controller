@@ -13,12 +13,10 @@ jobs:
     - name: checkout
       uses: actions/checkout@v2
 
-    - name: Find and Replace
-      uses: jacobtomlinson/gha-find-replace@0.1.1
-      with:
-        find: "version=latest"
-        replace: "version=$GITHUB_SHA"
-        include: "public/index.html"
+    - name: Replace version string
+      run: |
+        echo $GITHUB_SHA
+
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3.6.1
       with:
