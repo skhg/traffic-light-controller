@@ -47,7 +47,7 @@ function app(){
     var redDiv = document.getElementById('red');
 
     var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
-    var eventName = supportsTouch ? 'touchstart' : 'click';
+    var eventName = supportsTouch ? 'touchend' : 'click';
 
     circleDiv.addEventListener(eventName, party);
     greenDiv.addEventListener(eventName, green);
