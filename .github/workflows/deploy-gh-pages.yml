@@ -16,8 +16,8 @@ jobs:
     - name: Find and Replace
       uses: jacobtomlinson/gha-find-replace@0.1.1
       with:
-        find: "?version=latest"
-        replace: "?version=$GITHUB_SHA"
+        find: "version=latest"
+        replace: "version=$GITHUB_SHA"
         include: "public/index.html"
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3.6.1
