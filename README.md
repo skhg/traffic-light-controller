@@ -3,7 +3,7 @@ The [_Ampelmännchen_](https://en.wikipedia.org/wiki/Ampelm%C3%A4nnchen) are a p
 
 I came across a set of secondhand Ampelmann signals at a flea market, and I decided to make something fun with them.
 
-<ANIMATION/VIDEO HERE>
+**TODO ANIMATION HERE**
 
 ## Overview
 
@@ -95,11 +95,29 @@ Then the next time a client visits the webapp, the browser will see a new, diffe
 
 ### API
 
+See the `setup(void)` method in `traffic-light-controller.ino` and the Arduino Code section for how this works in practice.
+
+I decided to use both REST and WebSockets in tandem. REST is mostly used by clients to control the server. WebSockets are used to broadcast status information to clients. There are many tools like [Postman](https://www.postman.com/) which allow you to easily experiment with REST API's, so I found this more convenient.
+
+HTTP API:
+
+**TODO SWAGGER LINK HERE**
+
+WebSocket API:
+
+**TODO HERE**
+
 ### Arduino Code
+
+**TODO HERE**
 
 ## Circuit diagram
 
+**TODO HERE**
+
 ## References
+
+**TODO HERE**
 
 # to do
 WiFi connection with REST endpoints to set states
