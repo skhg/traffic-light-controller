@@ -7,6 +7,8 @@ I came across a set of secondhand Ampelmann signals at a flea market, and I deci
 
 ## Overview
 
+**Health Warning:** This project uses 220V mains power. I am not an electrician. Follow these instructions at your own risk.
+
 I wanted to build something with a _Berlin aesthetic_, and would be fun for visitors to my home to interact with. Unfortunately our visitor numbers [declined severely this year](https://en.wikipedia.org/wiki/COVID-19_pandemic), but still hoping for a great reaction in 2021...?
 
 The lights are switched on and off by solid-state relays. These can be a bit more expensive than an [optocoupler relay](https://www.amazon.de/-/en/gp/product/B078Q326KT/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) but don't make any [noise](https://youtu.be/FhQLq-eqfEc?t=2) as they switch, which is preferable for this project. To control the relays we need a WiFi connected, Arduino compatible board - so the trusty ESP8266 NodeMCU works perfectly here. 220V AC power is required anyway so there is no need for batteries or any low-power considerations.
@@ -41,6 +43,16 @@ Other necessary basic tools:
  * Power drill
  
 ## Construction
+
+The traffic light comes with 2 steel mounts, which are hollow. At the front, it has two doors which open to reveal the bulbs, reflectors and the transformers behind. These traffic bulbs are designed to run on 10.5V (30VA) as is printed on the transformer label. Behind the reflector, there's actually a lot of empty space. In a normal traffic light installation, all the control logic would be handled by an external box, but we want to have everything self-contained. So we will make the most of the space available.
+
+The ESP8266 and the relay board are mounted onto a small wooden board, that itself is bolted to the back of the traffic light case.
+
+The live and neutral wires coming from the 220V mains need to be split. Neutral connects to each of the transformers, as before. Live connects to two of the relays. Each of the relays then needs to be connected to neutral on both of the transformers. This completes the circuit, and when the relay is in it's "on" state, the light will come on.
+
+The two temperature sensors are mounted on to identical mini-perfboards. They are attached to the upper edge of each reflector section with double-sided sticky tape, and connected to the main board with ribbon cable.
+
+Once everything is hooked up, we can test it out, and close it up.
 
 ## Software
 
