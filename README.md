@@ -81,6 +81,18 @@ Finally, we want to reduce load on the server wherever possible. Remember the ES
 
 ### Webapp Deployment
 
+The ESP8266 is busy handling API requests and timing code, so it doesn't have the necessary resources to serve the webapp itself. Also, making cosmetic changes to the webapp is difficult, if I need to physically connect to the hardware every time. [OTA](https://tttapa.github.io/ESP8266/Chap13%20-%20OTA.html) solutions also seem unsuited here. Much easier to keep the two separate. How to do that easily?
+
+The webapp's [index.html](/webapp/index.html) follows the single-page application principle that everything should be rendered by Javascript, making the HTML content itself very small. Like 1.3kB small. Everything else is loaded by the client's browser, without needing to make further calls to the server. So the webapp is actually hosted in its entirety [on GitHub Pages](http://jackhiggins.ie/traffic-light-controller/). Browsing to `http://traffic-light.local.lan` makes a proxy request to load the index.html content on GitHub pages, and returns it to the client.
+
+Now we can change anything in the webapp, and the server is unaffected. Great! Well, almost...
+
+Most of the code for this webapp is in the CSS as JS files, not in `index.html` itself. Browsers cache any loaded files for an indeterminate period of time before it re-requests them. If index.html doesn't change, but we've deployed a new JS version, how will our clients know they need to load the new JS version?
+
+When we push any new version of our code to the git `master` branch, a GitHub [Action](.github/workflows/deploy-gh-pages.yml) runs, that executes the deployment to GitHub Pages where the page is actually served to the public. The trick here is in appending the suffix `?version=latest` to the end of our own CSS and JS files, in the `index.html`. Before it copies the content to the `gh-pages` branch, the action uses the command `sed` to replace that "`latest`" with the value of the variable `$GITHUB_SHA`, which is actually the last commit ID on the `master` branch. (e.g. a value like `b43200422c4f5da6dd70676456737e5af46cb825`).
+
+Then the next time a client visits the webapp, the browser will see a new, different value after the `?version=`, and request the new, updated JS or CSS file, which it will not have already cached.
+
 ### API
 
 ### Arduino Code
