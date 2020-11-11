@@ -56,9 +56,28 @@ Once everything is hooked up, we can test it out, and close it up.
 
 ## Software
 
+There are a few moving parts in the software here, so i've split this into a couple of sections.
+
 ### Overview
 
+The software is intended to allow users on the same LAN to control the traffic light through a browser, without any prior authorisation needed. Security is not considered for this project. The browser shows the state of the system in real time. 
+
 ### Webapp
+
+The webapp is a very simple responsive single-page application. It shows:
+* Red on/off
+* Green on/off
+* Party mode on/off
+* Temperature of the red and green enclosures
+* Currently playing song information.
+
+Code is under the [/webapp](/webapp) directory. No external dependencies are required since it's just relying on standard browser features, like [CSS transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform), [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket), and [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest). You can preview the running application [here](http://jackhiggins.ie/traffic-light-controller/) although it won't control anything, since of course you're not on my LAN. If you visited it from the local network, at e.g. `http://traffic-light.local.lan` it would work in full.
+
+Upon loading the page, the application makes a GET request to find the current status at `/api/status`, and then opens a WebSocket connection to the server on port `81`. Subsequent status updates will always come via the WebSocket, in order to keep multiple clients in sync.
+
+On startup we also detect if the user is on a mobile or desktop device, to handle either touch events or click events. We actually use the `touchend` event to send commands to the server, because this performed more reliably on the iPhone X. Swiping up from the bottom of the screen to exit Safari was firing the `touchstart` event, making it impossible to exit the app without turning on the green light!
+
+Finally, we want to reduce load on the server wherever possible. Remember the ESP8266 is [running](https://docs.zerynth.com/latest/reference/boards/nodemcu3/docs/) on an _80MHz_ processor with only about _50kB_ of RAM. It is NOT a beefy device. So when the browser is inactive, we disconnect the websocket. When the tab or browser reopens, we again check for status, and reconnect the WebSocket.
 
 ### Webapp Deployment
 
