@@ -1,0 +1,50 @@
+@startuml
+
+title loop(void) method 
+
+start
+
+:Handle requests; 
+
+while (Pending HTTP request?)  is (yes)
+  :Execute the corresponding handle<X> method;
+endwhile (No)
+
+:Update rhythm;
+
+if (Has the current beat ended?) then (yes)
+  :Set the next beat start time = now;
+
+    if (Have we reached the end of the rhythm pattern?) then (yes)
+        :Return to rhythm pattern step 0;
+    else (no)
+        :Advance to next rhythm step;
+    endif
+else
+endif
+
+:Read Sensors;
+
+if (Is it time to take a temperature reading?) then (yes)
+    :Set the sensor read time = now;
+    :Take readings;
+    :Send to WebSocket clients;
+else
+endif
+
+:Set the lights state;
+
+if (Are we in party mode?) then (yes)
+    if (Are we in the "off" beat?) then (yes)
+        :Switch OFF both lights;
+    else (no)
+        :Set both lights to the pattern for this rhythm step;
+    endif
+    :Send to WebSocket clients;
+else
+endif
+
+stop
+
+@enduml
+
