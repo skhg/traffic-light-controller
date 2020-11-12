@@ -50,7 +50,7 @@ function renderSkeleton(){
          </div>
     </div>
     <div id="circle-container">
-        <div id="circle"></div>
+        <div id="circle" class="party">Loading...</div>
     </div>
   `
 
@@ -63,19 +63,19 @@ function renderSkeleton(){
   var appleIcon = document.createElement('link');
   appleIcon.rel = 'apple-touch-icon';
   appleIcon.sizes = '180x180';
-  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=f68a61224f0545a3b41d9c742eddbf08d482e4ec';
+  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=69cf8da5a8c3310e9cbb4ac5b384c4dc43b624ee';
   document.head.appendChild(appleIcon);
 
   var icon = document.createElement('link');
   icon.rel = 'icon';
   icon.type = 'image/png';
-  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=f68a61224f0545a3b41d9c742eddbf08d482e4ec';
+  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=69cf8da5a8c3310e9cbb4ac5b384c4dc43b624ee';
   document.head.appendChild(icon);
 
   var stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.type = 'text/css';
-  stylesheet.href = webRoot + '/style.css?version=f68a61224f0545a3b41d9c742eddbf08d482e4ec';
+  stylesheet.href = webRoot + '/style.css?version=69cf8da5a8c3310e9cbb4ac5b384c4dc43b624ee';
   document.head.appendChild(stylesheet);
 
   document.title = "Traffic Light";
@@ -107,7 +107,6 @@ function app(){
     webSocketUrl = 'ws://' + window.location.host + ':81';
     refreshQuery = new XMLHttpRequest();
     
-    updateScreen();
     refreshState();
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
