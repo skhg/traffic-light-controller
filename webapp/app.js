@@ -3,6 +3,7 @@ var refreshQuery;
 var webSocketUrl;
 var state;
 var webSocket;
+var textSizeBugLoopId;
 
 function connect() {
    webSocket = new WebSocket(webSocketUrl);
@@ -95,11 +96,26 @@ function app(){
     webSocketUrl = 'ws://' + window.location.host + ':81';
     refreshQuery = new XMLHttpRequest();
     
+    textSizeBugLoopId = setInterval(textSizeBugFix, 100);
+
     refreshState();
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
     window.onunload = window.onbeforeunload = disconnect();
 };
+
+function textSizeBugFix(){
+  var circleFontSize = window.getComputedStyle($('circle'), null).getPropertyValue('font-size');
+  var expectedFontSize = "90px";
+
+  if(circleFontSize === expectedFontSize){
+    console.debug("Circle font size ok!");
+    clearInterval(textSizeBugLoopId);
+  }else{
+    $('circle').style.fontSize = expectedFontSize;
+  }
+
+}
 
 function disconnect(){
    if(webSocket.readyState === WebSocket.OPEN){
