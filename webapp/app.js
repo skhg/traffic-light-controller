@@ -50,7 +50,7 @@ function renderSkeleton(){
          </div>
     </div>
     <div id="circle-container">
-        <div id="circle"></div>
+        <div id="circle" class="party">Loading...</div>
     </div>
   `
 
@@ -107,7 +107,6 @@ function app(){
     webSocketUrl = 'ws://' + window.location.host + ':81';
     refreshQuery = new XMLHttpRequest();
     
-    updateScreen();
     refreshState();
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
