@@ -41,16 +41,16 @@ function renderSkeleton(){
 
   var basicSkeleton = `
   <div class="grid-container">
-      <div id="red" class="dark-red">
+      <div id="red">
             <div class="sensor infoText" id="red-sensor"></div>
          </div>
-      <div id="green" class="dark-green">
+      <div id="green">
             <div class="sensor infoText" id="green-sensor"></div>
             <div class="infoText" id="playing-song"></div>
          </div>
     </div>
     <div id="circle-container">
-        <div id="circle" class="noParty"></div>
+        <div id="circle"></div>
     </div>
   `
 
@@ -63,19 +63,19 @@ function renderSkeleton(){
   var appleIcon = document.createElement('link');
   appleIcon.rel = 'apple-touch-icon';
   appleIcon.sizes = '180x180';
-  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=7ed3f7706184ab3f7d174d0f4638cb0f952ea26f';
+  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=f68a61224f0545a3b41d9c742eddbf08d482e4ec';
   document.head.appendChild(appleIcon);
 
   var icon = document.createElement('link');
   icon.rel = 'icon';
   icon.type = 'image/png';
-  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=7ed3f7706184ab3f7d174d0f4638cb0f952ea26f';
+  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=f68a61224f0545a3b41d9c742eddbf08d482e4ec';
   document.head.appendChild(icon);
 
   var stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.type = 'text/css';
-  stylesheet.href = webRoot + '/style.css?version=7ed3f7706184ab3f7d174d0f4638cb0f952ea26f';
+  stylesheet.href = webRoot + '/style.css?version=f68a61224f0545a3b41d9c742eddbf08d482e4ec';
   document.head.appendChild(stylesheet);
 
   document.title = "Traffic Light";
@@ -97,19 +97,17 @@ function app(){
 
     renderSkeleton();
 
-    var circleDiv = $('circle');
-    var greenDiv = $('green');
-    var redDiv = $('red');
-
     var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
     var eventName = supportsTouch ? 'touchend' : 'click';
 
-    circleDiv.addEventListener(eventName, party);
-    greenDiv.addEventListener(eventName, green);
-    redDiv.addEventListener(eventName, red);
+    $('circle').addEventListener(eventName, party);
+    $('green').addEventListener(eventName, green);
+    $('red').addEventListener(eventName, red);
 
     webSocketUrl = 'ws://' + window.location.host + ':81';
     refreshQuery = new XMLHttpRequest();
+    
+    updateScreen();
     refreshState();
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
