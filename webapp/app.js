@@ -50,7 +50,7 @@ function renderSkeleton(){
          </div>
     </div>
     <div id="circle-container">
-        <div id="circle" class="noParty">Party Mode</div>
+        <div id="circle" class="noParty"></div>
     </div>
   `
 
@@ -142,12 +142,12 @@ function handleWebSocketMessage(event){
 };
 
 function updateScreen(){
-   var circleDiv = $('circle');
-   var greenDiv = $('green');
-   var redDiv = $('red');
-   var redSensorDiv = $('red-sensor');
-   var greenSensorDiv = $('green-sensor');
-   var playingSongDiv = $('playing-song');
+  var circleDiv = $('circle');
+  var greenDiv = $('green');
+  var redDiv = $('red');
+  var redSensorDiv = $('red-sensor');
+  var greenSensorDiv = $('green-sensor');
+  var playingSongDiv = $('playing-song');
 
 	if(state['green']){
 		greenDiv.className = 'bright-green';
@@ -159,49 +159,49 @@ function updateScreen(){
 	} else {
 		redDiv.className = 'dark-red';
 	}
-   if(state['party']){
-      circleDiv.className = 'party';
-      circleDiv.innerHTML = '' + state['bpm'] + ' BPM';
-   }else{
-      circleDiv.className = 'noParty';
-      circleDiv.innerHTML = 'Party Mode';
-   }
+  if(state['party']){
+    circleDiv.className = 'party';
+    circleDiv.innerHTML = '' + state['bpm'] + ' BPM';
+  }else{
+    circleDiv.className = 'noParty';
+    circleDiv.innerHTML = 'Party Mode';
+  }
 
-   greenSensorDiv.innerHTML = "" + Math.round(state['greenTemperature']) + "°C";
-   redSensorDiv.innerHTML = "" + Math.round(state['redTemperature']) + "°C";
+  greenSensorDiv.innerHTML = "" + Math.round(state['greenTemperature']) + "°C";
+  redSensorDiv.innerHTML = "" + Math.round(state['redTemperature']) + "°C";
 
-    var artistLine = state.artist.length === 0 ? "" : "" + state["artist"] + "<br/>";
-    var titleLine = state.title.length === 0 ? "" : "<i>" + state['title'] + "</i>" + "<br/>";
-    var albumLine = state.album.length === 0 ? "" : "" + state["album"];
-   playingSongDiv.innerHTML = artistLine + titleLine + albumLine;
+  var artistLine = state.artist.length === 0 ? "" : "" + state["artist"] + "<br/>";
+  var titleLine = state.title.length === 0 ? "" : "<i>" + state['title'] + "</i>" + "<br/>";
+  var albumLine = state.album.length === 0 ? "" : "" + state["album"];
+  playingSongDiv.innerHTML = artistLine + titleLine + albumLine;
 };
 
 function refreshState(){
-	refreshQuery = new XMLHttpRequest();
-	refreshQuery.open('GET', serverAddr + '/status', true);
-	refreshQuery.onreadystatechange = function(){
-		if (refreshQuery.readyState == XMLHttpRequest.DONE) {
-			if (refreshQuery.status == 200) {
-            state =  JSON.parse(refreshQuery.responseText);
-				updateScreen();
-			}
-		}
-	};
-	refreshQuery.send();
+  refreshQuery = new XMLHttpRequest();
+  refreshQuery.open('GET', serverAddr + '/status', true);
+  refreshQuery.onreadystatechange = function(){
+    if (refreshQuery.readyState == XMLHttpRequest.DONE) {
+      if (refreshQuery.status == 200) {
+        state =  JSON.parse(refreshQuery.responseText);
+        updateScreen();
+      }
+    }
+  };
+  refreshQuery.send();
 };
 
 function green(){
-	refreshQuery.abort();
-	var xhr = new XMLHttpRequest();
-	if(state['green']){
-		xhr.open('DELETE', serverAddr + '/green', true);
-	}else{
-		xhr.open('PUT', serverAddr + '/green', true);
-	}
+  refreshQuery.abort();
+  var xhr = new XMLHttpRequest();
+  if(state['green']){
+    xhr.open('DELETE', serverAddr + '/green', true);
+  }else{
+    xhr.open('PUT', serverAddr + '/green', true);
+  }
 	
-		xhr.send();
-		state['green'] = !state['green'];
-		updateScreen();
+  xhr.send();
+  state['green'] = !state['green'];
+  updateScreen();
 };
 
 function red(){
@@ -213,24 +213,24 @@ function red(){
 		xhr.open('PUT', serverAddr + '/red', true);
 	}
 	
-		xhr.send();
-		state['red'] = !state['red'];
-		updateScreen();
+  xhr.send();
+  state['red'] = !state['red'];
+  updateScreen();
 };
 
 function party(){
-   refreshQuery.abort();
-	if(state['party']){
-		var xhr = new XMLHttpRequest();
-		xhr.open('DELETE', serverAddr + '/party', true);
-	      xhr.send();
+  refreshQuery.abort();
+  if(state['party']){
+    var xhr = new XMLHttpRequest();
+    xhr.open('DELETE', serverAddr + '/party', true);
+    xhr.send();
 	} else {
-		var xhr = new XMLHttpRequest();
-		xhr.open('PUT', serverAddr + '/party', true);
-		   xhr.send();
+    var xhr = new XMLHttpRequest();
+    xhr.open('PUT', serverAddr + '/party', true);
+    xhr.send();
 	}
 	state['party'] = !state['party'];
-   updateScreen();
+  updateScreen();
 };
 
 function $(elementId){
