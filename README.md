@@ -99,17 +99,28 @@ See the `setup(void)` method in `traffic-light-controller.ino` and the Arduino C
 
 I decided to use both REST and WebSockets in tandem. REST is mostly used by clients to control the server. WebSockets are used to broadcast status information to clients. There are many tools like [Postman](https://www.postman.com/) which allow you to easily experiment with REST API's, so I found this more convenient.
 
-HTTP API:
+HTTP API: Refer to the Swagger documentation [here](http://jackhiggins.ie/traffic-light-controller/docs/).
 
-**TODO SWAGGER LINK HERE**
-
-WebSocket API:
-
-**TODO HERE**
+WebSocket API: **TODO DOCUMENTATION**
 
 ### Arduino Code
 
-**TODO HERE**
+The arduino code is all within a [single file](traffic-light-controller.ino).
+
+It begins with a set of definitions for pin locations, library imports and hardcoded values for things like HTTP Content-Types and response code values. Following that are a set of variable which can change at runtime, all prefixed with underscores. A few objects are also initialised here, including those for the web server, web socket server, WiFi client, and temperature sensors. The "system clock" is maintained by the `_currentMillis` field.
+
+After booting, the `setup(void)` method runs. After doing some pin setup, it creates the necessary mappings for the REST endpoints, and starts the servers listening for client requests. The `loop(void)` method is in charge of everything else. Each cycle it processes any pending web requests, updates the rhythm cycle, and reads the sensors if necessary. If we're in party mode, it will set the current flash/pulse state.
+
+The rhythm (for party mode) is hardcoded to play the sequence in the field `RHYTHM_PATTERN`, but in theory it could be changed at runtime to anything else. Every time we call the `rhythm()` method, we use the current `_bpm` and `_currentMillis` values to work out what position we should be in the pattern. This is stored in the `_rhythmStep` field.
+
+During the rhythm pattern, there are periods where both of the relays are actually switched off. But because the lights are incandescent bulbs, they don't start or stop emitting light instantly. It looks like the bulbs take about 1.7 seconds to switch fully on or off. So by adding a period within the pattern where both are switched off, we end up with a gentle pulsing pattern as the bulbs warm up and cool down.
+
+In the `partyFlash()` method, we get the pattern item that is supposed to currently be displayed (or both are to be switched off) and call `lightSwitch(...)` with the appropriate parameters. `lightSwitch(...)` in turn calls `sendToWebSocketClients(...)` so that all connected clients are updated to the new state.
+
+If the user simply clicks on one of the lights to turn it on or off, the process is similar, but handled as a REST request. One of the `handleX` methods is called, which validates the request, and in turn calls `lightSwitch(...)`.
+
+At a more infrequent interval, we check the temperature of the two enclosures, and also send this via WebSocket to all clients. This is currently only used for informational purposes but it could be used to disable the lights when the temperature exceeds some safety limit.
+
 
 ## Circuit diagram
 
