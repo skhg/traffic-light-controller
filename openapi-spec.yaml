@@ -1,0 +1,263 @@
+openapi: 3.0.1
+info:
+  title: Ampelmännchen traffic light API
+  description: This is the documentation for the Ampelmann traffic light REST endpoints.
+  contact:
+    email: git@jackhiggins.ie
+  license:
+    name: MIT Licence
+    url: 'https://github.com/skhg/traffic-light-controller/blob/master/LICENSE'
+  version: latest
+externalDocs:
+  description: Project documentation
+  url: 'https://github.com/skhg/traffic-light-controller/'
+tags:
+  - name: web
+    description: Loads web pages
+  - name: lights
+    description: Control or query the lights
+  - name: music
+    description: Control or query info related to the song and current tempo
+  - name: status
+    description: General system status information
+paths:
+  /:
+    get:
+      tags:
+        - web
+      summary: Load the web application
+      responses:
+        '200':
+          description: Webapp body response
+          content:
+            text/html:
+              example:
+                latestFile:
+                  externalValue: 'https://raw.githubusercontent.com/skhg/traffic-light-controller/master/webapp/index.html'
+  /api/red:
+    get:
+      tags:
+        - lights
+      summary: Get the red light status
+      responses:
+        '200':
+          description: Got the status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  red:
+                    type: boolean
+    put:
+      tags:
+        - lights
+      summary: Put on the red light (Roxanne)
+      responses:
+        '204':
+          description: Turned the light on
+    delete:
+      tags:
+        - lights
+      summary: Switch off the red light
+      responses:
+        '204':
+          description: Switched the light off
+  
+  /api/green:
+    get:
+      tags:
+        - lights
+      summary: Get the green light status
+      responses:
+        '200':
+          description: Got the status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  red:
+                    type: boolean
+    put:
+      tags:
+        - lights
+      summary: Switch on the green light
+      responses:
+        '204':
+          description: Turned the light on
+    delete:
+      tags:
+        - lights
+      summary: Switch off the green light
+      responses:
+        '204':
+          description: Switched the light off
+          
+  /api/party:
+    get:
+      tags:
+        - lights
+      summary: Get the party mode status
+      responses:
+        '200':
+          description: Got the status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  party:
+                    type: boolean
+    put:
+      tags:
+        - lights
+      summary: Get the party started
+      responses:
+        '204':
+          description: The lights will have started pulsing
+    delete:
+      tags:
+        - lights
+      summary: Stop the party
+      responses:
+        '204':
+          description: The lights will remain in their last state and will stop pulsing
+          
+  /api/tempo:
+    get:
+      tags:
+        - music
+      summary: Get the current tempo (Song BPM)
+      responses:
+        '200':
+          description: Got the status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bpm:
+                    type: integer
+                    example: 99
+    put:
+      tags:
+        - music
+      summary: Set the current tempo (Song BPM)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                bpm:
+                  type: integer
+                  description: New BPM value
+                  example: 120
+      responses:
+        '204':
+          description: Set the BPM
+          
+  /api/song:
+    get:
+      tags:
+        - music
+      summary: Get the currently playing track details
+      responses:
+        '200':
+          description: Got the track details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: 'Exits'
+                  artist:
+                    type: string
+                    example: 'Foals'
+                  album:
+                    type: string
+                    example: 'Part 1 Everything Not Saved Will Be Lost'
+                  
+    put:
+      tags:
+        - music
+      summary: Set the currently playing track details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: 'Parfum thérémine - Version acoustique'
+                  artist:
+                    type: string
+                    example: 'LImpératrice'
+                  album:
+                    type: string
+                    example: 'Odyssée (Version acoustique)'
+      responses:
+        '204':
+          description: Set the track details
+    delete:
+      tags:
+        - music
+      summary: Clear the currently playing track
+      responses:
+        '204':
+          description: Current track details cleared
+        
+  /api/status:
+    get:
+      tags:
+        - status
+      summary: Get all the current system status details.
+      description: This is a combination of all other GET responses, plus some additional fields.
+      responses:
+        '200':
+          description: Got the system status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bpm:
+                    type: integer
+                    example: 110
+                  green:
+                    type: boolean
+                  red:
+                    type: boolean
+                  party:
+                    type: boolean
+                  title:
+                    type: string
+                    example: 'Parfum thérémine - Version acoustique'
+                  artist:
+                    type: string
+                    example: 'LImpératrice'
+                  album:
+                    type: string
+                    example: 'Odyssée (Version acoustique)'
+                  redTemperature:
+                    type: number
+                    example: 20.2
+                  greenTemperature:
+                    type: number
+                    example: 21.2
+                  greenHumidity:
+                    type: number
+                    example: 53
+                  redHumidity:
+                    type: number
+                    example: 56
+                    
+servers:
+  - url: 'http://traffic-light.fritz.box'
+    variables: {}
+    description: Traffic Light on LAN
