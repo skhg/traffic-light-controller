@@ -109,6 +109,8 @@ The arduino code is all within a [single file](traffic-light-controller.ino).
 
 It begins with a set of definitions for pin locations, library imports and hardcoded values for things like HTTP Content-Types and response code values. Following that are a set of variable which can change at runtime, all prefixed with underscores. A few objects are also initialised here, including those for the web server, web socket server, WiFi client, and temperature sensors. The "system clock" is maintained by the `_currentMillis` field.
 
+<img align="right" width="30%" src="images/loop_activity.svg">
+
 After booting, the `setup(void)` method runs. After doing some pin setup, it creates the necessary mappings for the REST endpoints, and starts the servers listening for client requests. The `loop(void)` method is in charge of everything else. Each cycle it processes any pending web requests, updates the rhythm cycle, and reads the sensors if necessary. If we're in party mode, it will set the current flash/pulse state.
 
 The rhythm (for party mode) is hardcoded to play the sequence in the field `RHYTHM_PATTERN`, but in theory it could be changed at runtime to anything else. Every time we call the `rhythm()` method, we use the current `_bpm` and `_currentMillis` values to work out what position we should be in the pattern. This is stored in the `_rhythmStep` field.
