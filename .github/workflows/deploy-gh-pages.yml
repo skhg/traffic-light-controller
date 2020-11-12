@@ -32,6 +32,7 @@ jobs:
     - name: Replace version string
       run: |
         sed -i "s/version=latest/version=$GITHUB_SHA/g" webapp/index.html
+        sed -i "s/version=latest/version=$GITHUB_SHA/g" webapp/app.js
       env:
         GITHUB_CONTEXT: ${{ github.sha }}
 
