@@ -57,6 +57,8 @@ The live and neutral wires coming from the 220V mains need to be split. Neutral 
 
 The two temperature sensors are mounted on to identical mini-perfboards. They are attached to the upper edge of each reflector section with double-sided sticky tape, and connected to the main board with ribbon cable.
 
+![Interior wiring](images/interior_wiring.jpeg "Interior wiring")
+
 Once everything is hooked up, we can test it out, and close it up.
 
 ## Software
