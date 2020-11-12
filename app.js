@@ -50,7 +50,7 @@ function renderSkeleton(){
          </div>
     </div>
     <div id="circle-container">
-        <div id="circle" class="party">Loading...</div>
+        <div id="circle"></div>
     </div>
   `
 
@@ -63,19 +63,19 @@ function renderSkeleton(){
   var appleIcon = document.createElement('link');
   appleIcon.rel = 'apple-touch-icon';
   appleIcon.sizes = '180x180';
-  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=5a3b0dc294ebdca17deaf844bd9ed81cd5a28262';
+  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=45921f51a6d4f25ca16fa513c9bb0e7af7bb56d4';
   document.head.appendChild(appleIcon);
 
   var icon = document.createElement('link');
   icon.rel = 'icon';
   icon.type = 'image/png';
-  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=5a3b0dc294ebdca17deaf844bd9ed81cd5a28262';
+  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=45921f51a6d4f25ca16fa513c9bb0e7af7bb56d4';
   document.head.appendChild(icon);
 
   var stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.type = 'text/css';
-  stylesheet.href = webRoot + '/style.css?version=5a3b0dc294ebdca17deaf844bd9ed81cd5a28262';
+  stylesheet.href = webRoot + '/style.css?version=45921f51a6d4f25ca16fa513c9bb0e7af7bb56d4';
   document.head.appendChild(stylesheet);
 
   document.title = "Traffic Light";
@@ -111,14 +111,7 @@ function app(){
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
     window.onunload = window.onbeforeunload = disconnect();
-
-    redrawCircle();
 };
-
-function redrawCircle(){
-  $('circle-container').style.display = 'none';
-  $('circle-container').style.display = 'block';
-}
 
 function disconnect(){
    if(webSocket.readyState === WebSocket.OPEN){
