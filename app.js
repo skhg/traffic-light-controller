@@ -3,6 +3,7 @@ var refreshQuery;
 var webSocketUrl;
 var state;
 var webSocket;
+var textSizeBugLoopId;
 
 function connect() {
    webSocket = new WebSocket(webSocketUrl);
@@ -51,19 +52,19 @@ function renderSkeleton(){
   var appleIcon = document.createElement('link');
   appleIcon.rel = 'apple-touch-icon';
   appleIcon.sizes = '180x180';
-  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=f121534f8616d24fb00b11385bbe89c93fce3f74';
+  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=25a4d6e37227ab0039b3378abf7b70a655e51ede';
   document.head.appendChild(appleIcon);
 
   var icon = document.createElement('link');
   icon.rel = 'icon';
   icon.type = 'image/png';
-  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=f121534f8616d24fb00b11385bbe89c93fce3f74';
+  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=25a4d6e37227ab0039b3378abf7b70a655e51ede';
   document.head.appendChild(icon);
 
   var stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.type = 'text/css';
-  stylesheet.href = webRoot + '/style.css?version=f121534f8616d24fb00b11385bbe89c93fce3f74';
+  stylesheet.href = webRoot + '/style.css?version=25a4d6e37227ab0039b3378abf7b70a655e51ede';
   document.head.appendChild(stylesheet);
 
   document.title = "Traffic Light";
@@ -95,11 +96,26 @@ function app(){
     webSocketUrl = 'ws://' + window.location.host + ':81';
     refreshQuery = new XMLHttpRequest();
     
+    textSizeBugLoopId = setInterval(textSizeBugFix, 100);
+
     refreshState();
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
     window.onunload = window.onbeforeunload = disconnect();
 };
+
+function textSizeBugFix(){
+  var circleFontSize = window.getComputedStyle($('circle'), null).getPropertyValue('font-size');
+  var expectedFontSize = "90px";
+
+  if(circleFontSize === expectedFontSize){
+    console.debug("Circle font size ok!");
+    clearInterval(textSizeBugLoopId);
+  }else{
+    $('circle').style.fontSize = expectedFontSize;
+  }
+
+}
 
 function disconnect(){
    if(webSocket.readyState === WebSocket.OPEN){
