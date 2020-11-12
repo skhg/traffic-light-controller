@@ -28,14 +28,6 @@ function connect() {
    };
 };
 
-function createMetaTag(name, value){
-  var newMeta = document.createElement('meta');
-  newMeta.httpEquiv = name;
-  newMeta.content = value;
-
-  document.getElementsByTagName('head')[0].appendChild(newMeta);
-}
-
 function renderSkeleton(){
   var webRoot = 'https://jackhiggins.ie/traffic-light-controller';
 
@@ -56,26 +48,22 @@ function renderSkeleton(){
 
   document.body.innerHTML = basicSkeleton;
 
-  createMetaTag("viewport", "user-scalable=no");
-  createMetaTag("apple-mobile-web-app-status-bar-style", "black");
-  createMetaTag("apple-mobile-web-app-capable", "yes");
-
   var appleIcon = document.createElement('link');
   appleIcon.rel = 'apple-touch-icon';
   appleIcon.sizes = '180x180';
-  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=45921f51a6d4f25ca16fa513c9bb0e7af7bb56d4';
+  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=65e39a1d3e08c82607acba730e605d3943372744';
   document.head.appendChild(appleIcon);
 
   var icon = document.createElement('link');
   icon.rel = 'icon';
   icon.type = 'image/png';
-  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=45921f51a6d4f25ca16fa513c9bb0e7af7bb56d4';
+  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=65e39a1d3e08c82607acba730e605d3943372744';
   document.head.appendChild(icon);
 
   var stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.type = 'text/css';
-  stylesheet.href = webRoot + '/style.css?version=45921f51a6d4f25ca16fa513c9bb0e7af7bb56d4';
+  stylesheet.href = webRoot + '/style.css?version=65e39a1d3e08c82607acba730e605d3943372744';
   document.head.appendChild(stylesheet);
 
   document.title = "Traffic Light";
