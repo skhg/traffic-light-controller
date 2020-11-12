@@ -6,8 +6,6 @@ The [_Ampelmännchen_](https://en.wikipedia.org/wiki/Ampelm%C3%A4nnchen) are a p
 
 I came across a set of secondhand Ampelmann signals at a flea market, and I decided to make something fun with them.
 
-**TODO ANIMATION HERE**
-
 ## Overview
 
 **Health Warning:** This project uses 220V mains power. I am not an electrician. Follow these instructions at your own risk.
