@@ -28,6 +28,59 @@ function connect() {
    };
 };
 
+function createMetaTag(name, value){
+  var newMeta = document.createElement('meta');
+  newMeta.httpEquiv = name;
+  newMeta.content = value;
+
+  document.getElementsByTagName('head')[0].appendChild(newMeta);
+}
+
+function renderSkeleton(){
+  var webRoot = 'https://jackhiggins.ie/traffic-light-controller';
+
+  var basicSkeleton = `
+  <div class="grid-container">
+      <div id="red" class="dark-red">
+            <div class="sensor infoText" id="red-sensor"></div>
+         </div>
+      <div id="green" class="dark-green">
+            <div class="sensor infoText" id="green-sensor"></div>
+            <div class="infoText" id="playing-song"></div>
+         </div>
+    </div>
+    <div id="circle-container">
+        <div id="circle" class="noParty">Party Mode</div>
+    </div>
+  `
+
+  document.body.innerHTML = basicSkeleton;
+
+  createMetaTag("viewport", "user-scalable=no");
+  createMetaTag("apple-mobile-web-app-status-bar-style", "black");
+  createMetaTag("apple-mobile-web-app-capable", "yes");
+
+  var appleIcon = document.createElement('link');
+  appleIcon.rel = 'apple-touch-icon';
+  appleIcon.sizes = '180x180';
+  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=2981705013b04ce568717523db5f7553065cb567';
+  document.head.appendChild(appleIcon);
+
+  var icon = document.createElement('link');
+  icon.rel = 'icon';
+  icon.type = 'image/png';
+  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=2981705013b04ce568717523db5f7553065cb567';
+  document.head.appendChild(icon);
+
+  var stylesheet = document.createElement('link');
+  stylesheet.rel = 'stylesheet';
+  stylesheet.type = 'text/css';
+  stylesheet.href = webRoot + '/style.css?version=2981705013b04ce568717523db5f7553065cb567';
+  document.head.appendChild(stylesheet);
+
+  document.title = "Traffic Light";
+}
+
 function app(){
     serverAddr = '/api';
     state = {
@@ -42,9 +95,11 @@ function app(){
         'artist': ''
     };
 
-    var circleDiv = document.getElementById('circle');
-    var greenDiv = document.getElementById('green');
-    var redDiv = document.getElementById('red');
+    renderSkeleton();
+
+    var circleDiv = $('circle');
+    var greenDiv = $('green');
+    var redDiv = $('red');
 
     var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
     var eventName = supportsTouch ? 'touchend' : 'click';
@@ -87,12 +142,12 @@ function handleWebSocketMessage(event){
 };
 
 function updateScreen(){
-   var circleDiv = document.getElementById('circle');
-   var greenDiv = document.getElementById('green');
-   var redDiv = document.getElementById('red');
-   var redSensorDiv = document.getElementById('red-sensor');
-   var greenSensorDiv = document.getElementById('green-sensor');
-   var playingSongDiv = document.getElementById('playing-song');
+   var circleDiv = $('circle');
+   var greenDiv = $('green');
+   var redDiv = $('red');
+   var redSensorDiv = $('red-sensor');
+   var greenSensorDiv = $('green-sensor');
+   var playingSongDiv = $('playing-song');
 
 	if(state['green']){
 		greenDiv.className = 'bright-green';
@@ -177,3 +232,7 @@ function party(){
 	state['party'] = !state['party'];
    updateScreen();
 };
+
+function $(elementId){
+  return document.getElementById(elementId);
+}
