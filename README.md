@@ -73,6 +73,8 @@ The webapp is a very simple responsive single-page application. It shows:
 
 Code is under the [/webapp](/webapp) directory. No external dependencies are required since it's just relying on standard browser features, like [CSS transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform), [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket), and [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest). You can preview the running application [here](http://jackhiggins.ie/traffic-light-controller/) although it won't control anything, since of course you're not on my LAN. If you visited it from the local network, at e.g. `http://traffic-light.local.lan` it would work in full.
 
+<img align="right" width="40%" src="images/webapp_state.png">
+
 Upon loading the page, the application makes a GET request to find the current status at `/api/status`, and then opens a WebSocket connection to the server on port `81`. Subsequent status updates will always come via the WebSocket, in order to keep multiple clients in sync.
 
 On startup we also detect if the user is on a mobile or desktop device, to handle either touch events or click events. We actually use the `touchend` event to send commands to the server, because this performed more reliably on the iPhone X. Swiping up from the bottom of the screen to exit Safari was firing the `touchstart` event, making it impossible to exit the app without turning on the green light!
