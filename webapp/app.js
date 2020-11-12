@@ -28,14 +28,6 @@ function connect() {
    };
 };
 
-function createMetaTag(name, value){
-  var newMeta = document.createElement('meta');
-  newMeta.httpEquiv = name;
-  newMeta.content = value;
-
-  document.getElementsByTagName('head')[0].appendChild(newMeta);
-}
-
 function renderSkeleton(){
   var webRoot = 'https://jackhiggins.ie/traffic-light-controller';
 
@@ -55,10 +47,6 @@ function renderSkeleton(){
   `
 
   document.body.innerHTML = basicSkeleton;
-
-  createMetaTag("viewport", "user-scalable=no");
-  createMetaTag("apple-mobile-web-app-status-bar-style", "black");
-  createMetaTag("apple-mobile-web-app-capable", "yes");
 
   var appleIcon = document.createElement('link');
   appleIcon.rel = 'apple-touch-icon';
