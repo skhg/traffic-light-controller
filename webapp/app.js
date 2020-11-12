@@ -50,7 +50,7 @@ function renderSkeleton(){
          </div>
     </div>
     <div id="circle-container">
-        <div id="circle" class="party">Loading...</div>
+        <div id="circle"></div>
     </div>
   `
 
