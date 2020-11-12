@@ -111,7 +111,14 @@ function app(){
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
     window.onunload = window.onbeforeunload = disconnect();
+
+    redrawCircle();
 };
+
+function redrawCircle(){
+  $('circle-container').style.display = 'none';
+  $('circle-container').style.display = 'block';
+}
 
 function disconnect(){
    if(webSocket.readyState === WebSocket.OPEN){
