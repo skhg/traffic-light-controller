@@ -113,6 +113,8 @@ function textSizeBugFix(){
     clearInterval(textSizeBugLoopId);
   }else{
     $('circle').style.fontSize = expectedFontSize;
+    $('circle').style.display = 'none';
+    $('circle').style.display = 'block';
   }
 
 }
