@@ -1,4 +1,7 @@
 # traffic-light-controller
+
+<img align="right" width="20%" src="images/market.jpeg">
+
 The [_Ampelmännchen_](https://en.wikipedia.org/wiki/Ampelm%C3%A4nnchen) are a popular symbol from East Germany, which display on the pedestrian traffic lights at every street corner. There's even a Berlin-based [retail chain](https://www.ampelmann.de/) that's inspired by their design.
 
 I came across a set of secondhand Ampelmann signals at a flea market, and I decided to make something fun with them.
