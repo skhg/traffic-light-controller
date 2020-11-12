@@ -47,9 +47,13 @@ Other necessary basic tools:
 
 The traffic light comes with 2 steel mounts, which are hollow. At the front, it has two doors which open to reveal the bulbs, reflectors and the transformers behind. These traffic bulbs are designed to run on 10.5V (30VA) as is printed on the transformer label. Behind the reflector, there's actually a lot of empty space. In a normal traffic light installation, all the control logic would be handled by an external box, but we want to have everything self-contained. So we will make the most of the space available.
 
+![Interior](images/interior.jpeg "Empty Interior")
+
 The ESP8266 and the relay board are mounted onto a small wooden board, that itself is bolted to the back of the traffic light case.
 
 The live and neutral wires coming from the 220V mains need to be split. Neutral connects to each of the transformers, as before. Live connects to two of the relays. Each of the relays then needs to be connected to neutral on both of the transformers. This completes the circuit, and when the relay is in it's "on" state, the light will come on.
+
+![Interior with board](images/interior_with_board.jpeg "Interior with board v1")
 
 The two temperature sensors are mounted on to identical mini-perfboards. They are attached to the upper edge of each reflector section with double-sided sticky tape, and connected to the main board with ribbon cable.
 
