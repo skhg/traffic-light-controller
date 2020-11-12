@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: Swagger Petstore
+  title: Ampelmännchen traffic light API
   description: This is the documentation for the Ampelmann traffic light REST endpoints.
   contact:
     email: git@jackhiggins.ie
@@ -14,8 +14,12 @@ externalDocs:
 tags:
   - name: web
     description: Loads web pages
-  - name: api
-    description: Executes API commands
+  - name: lights
+    description: Control or query the lights
+  - name: music
+    description: Control or query info related to the song and current tempo
+  - name: status
+    description: General system status information
 paths:
   /:
     get:
@@ -33,7 +37,7 @@ paths:
   /api/red:
     get:
       tags:
-        - api
+        - lights
       summary: Get the red light status
       responses:
         '200':
@@ -47,14 +51,14 @@ paths:
                     type: boolean
     put:
       tags:
-        - api
+        - lights
       summary: Put on the red light (Roxanne)
       responses:
         '204':
           description: Turned the light on
     delete:
       tags:
-        - api
+        - lights
       summary: Switch off the red light
       responses:
         '204':
@@ -63,7 +67,7 @@ paths:
   /api/green:
     get:
       tags:
-        - api
+        - lights
       summary: Get the green light status
       responses:
         '200':
@@ -77,585 +81,182 @@ paths:
                     type: boolean
     put:
       tags:
-        - api
+        - lights
       summary: Switch on the green light
       responses:
         '204':
           description: Turned the light on
     delete:
       tags:
-        - api
+        - lights
       summary: Switch off the green light
       responses:
         '204':
           description: Switched the light off
           
-  /pet/findByTags:
+  /api/party:
     get:
       tags:
-        - pet
-      summary: Finds Pets by tags
-      description: >-
-        Muliple tags can be provided with comma separated strings. Use        
-        tag1, tag2, tag3 for testing.
-      operationId: findPetsByTags
-      parameters:
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: array
-            items:
-              type: string
+        - lights
+      summary: Get the party mode status
       responses:
         '200':
-          description: successful operation
-          content:
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid tag value
-          content: {}
-      deprecated: true
-  '/pet/{petId}':
-    get:
-      tags:
-        - pet
-      summary: Find pet by ID
-      description: Returns a single pet
-      operationId: getPetById
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to return
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid ID supplied
-          content: {}
-        '404':
-          description: Pet not found
-          content: {}
-    post:
-      tags:
-        - pet
-      summary: Updates a pet in the store with form data
-      operationId: updatePetWithForm
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet that needs to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              properties:
-                name:
-                  type: string
-                  description: Updated name of the pet
-                status:
-                  type: string
-                  description: Updated status of the pet
-      responses:
-        '405':
-          description: Invalid input
-          content: {}
-    delete:
-      tags:
-        - pet
-      summary: Deletes a pet
-      operationId: deletePet
-      parameters:
-        - name: api_key
-          in: header
-          schema:
-            type: string
-        - name: petId
-          in: path
-          description: Pet id to delete
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid ID supplied
-          content: {}
-        '404':
-          description: Pet not found
-          content: {}
-  '/pet/{petId}/uploadImage':
-    post:
-      tags:
-        - pet
-      summary: uploads an image
-      operationId: uploadFile
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to update
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              properties:
-                additionalMetadata:
-                  type: string
-                  description: Additional data to pass to server
-                file:
-                  type: string
-                  description: file to upload
-                  format: binary
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-  /store/inventory:
-    get:
-      tags:
-        - store
-      summary: Returns pet inventories by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
-      responses:
-        '200':
-          description: successful operation
+          description: Got the status
           content:
             application/json:
               schema:
                 type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
-  /store/order:
-    post:
-      tags:
-        - store
-      summary: Place an order for a pet
-      operationId: placeOrder
-      requestBody:
-        description: order placed for purchasing the pet
-        content:
-          '*/*':
-            schema:
-              $ref: '#/components/schemas/Order'
-        required: true
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid Order
-          content: {}
-      x-codegen-request-body-name: body
-  '/store/order/{orderId}':
-    get:
-      tags:
-        - store
-      summary: Find purchase order by ID
-      description: >-
-        For valid response try integer IDs with value >= 1 and <= 10.        
-        Other values will generated exceptions
-      operationId: getOrderById
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of pet that needs to be fetched
-          required: true
-          schema:
-            maximum: 10
-            minimum: 1
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid ID supplied
-          content: {}
-        '404':
-          description: Order not found
-          content: {}
-    delete:
-      tags:
-        - store
-      summary: Delete purchase order by ID
-      description: >-
-        For valid response try integer IDs with positive integer value.        
-        Negative or non-integer values will generate API errors
-      operationId: deleteOrder
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
-          schema:
-            minimum: 1
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid ID supplied
-          content: {}
-        '404':
-          description: Order not found
-          content: {}
-  /user:
-    post:
-      tags:
-        - user
-      summary: Create user
-      description: This can only be done by the logged in user.
-      operationId: createUser
-      requestBody:
-        description: Created user object
-        content:
-          '*/*':
-            schema:
-              $ref: '#/components/schemas/User'
-        required: true
-      responses:
-        default:
-          description: successful operation
-          content: {}
-      x-codegen-request-body-name: body
-  /user/createWithArray:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      operationId: createUsersWithArrayInput
-      requestBody:
-        description: List of user object
-        content:
-          '*/*':
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-        required: true
-      responses:
-        default:
-          description: successful operation
-          content: {}
-      x-codegen-request-body-name: body
-  /user/createWithList:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      operationId: createUsersWithListInput
-      requestBody:
-        description: List of user object
-        content:
-          '*/*':
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-        required: true
-      responses:
-        default:
-          description: successful operation
-          content: {}
-      x-codegen-request-body-name: body
-  /user/login:
-    get:
-      tags:
-        - user
-      summary: Logs user into the system
-      operationId: loginUser
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: true
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/xml:
-              schema:
-                type: string
-            application/json:
-              schema:
-                type: string
-        '400':
-          description: Invalid username/password supplied
-          content: {}
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      operationId: logoutUser
-      responses:
-        default:
-          description: successful operation
-          content: {}
-  '/user/{username}':
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      operationId: getUserByName
-      parameters:
-        - name: username
-          in: path
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid username supplied
-          content: {}
-        '404':
-          description: User not found
-          content: {}
+                properties:
+                  party:
+                    type: boolean
     put:
       tags:
-        - user
-      summary: Updated user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
-      parameters:
-        - name: username
-          in: path
-          description: name that need to be updated
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Updated user object
-        content:
-          '*/*':
-            schema:
-              $ref: '#/components/schemas/User'
-        required: true
+        - lights
+      summary: Get the party started
       responses:
-        '400':
-          description: Invalid user supplied
-          content: {}
-        '404':
-          description: User not found
-          content: {}
-      x-codegen-request-body-name: body
+        '204':
+          description: The lights will have started pulsing
     delete:
       tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          schema:
-            type: string
+        - lights
+      summary: Stop the party
       responses:
-        '400':
-          description: Invalid username supplied
-          content: {}
-        '404':
-          description: User not found
-          content: {}
-components:
-  schemas:
-    Order:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        petId:
-          type: integer
-          format: int64
-        quantity:
-          type: integer
-          format: int32
-        shipDate:
-          type: string
-          format: date-time
-        status:
-          type: string
-          description: Order Status
-          enum:
-            - placed
-            - approved
-            - delivered
-        complete:
-          type: boolean
-          default: false
-      xml:
-        name: Order
-    Category:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-      xml:
-        name: Category
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        username:
-          type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
-        password:
-          type: string
-        phone:
-          type: string
-        userStatus:
-          type: integer
-          description: User Status
-          format: int32
-      xml:
-        name: User
-    Tag:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-      xml:
-        name: Tag
-    Pet:
-      required:
-        - name
-        - photoUrls
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        category:
-          $ref: '#/components/schemas/Category'
-        name:
-          type: string
-          example: doggie
-        photoUrls:
-          type: array
-          xml:
-            name: photoUrl
-            wrapped: true
-          items:
-            type: string
-        tags:
-          type: array
-          xml:
-            name: tag
-            wrapped: true
-          items:
-            $ref: '#/components/schemas/Tag'
-        status:
-          type: string
-          description: pet status in the store
-          enum:
-            - available
-            - pending
-            - sold
-      xml:
-        name: Pet
-    ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
-        message:
-          type: string
+        '204':
+          description: The lights will remain in their last state and will stop pulsing
+          
+  /api/tempo:
+    get:
+      tags:
+        - music
+      summary: Get the current tempo (Song BPM)
+      responses:
+        '200':
+          description: Got the status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bpm:
+                    type: integer
+                    example: 99
+    put:
+      tags:
+        - music
+      summary: Set the current tempo (Song BPM)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                bpm:
+                  type: integer
+                  description: New BPM value
+                  example: 120
+      responses:
+        '204':
+          description: Set the BPM
+          
+  /api/song:
+    get:
+      tags:
+        - music
+      summary: Get the currently playing track details
+      responses:
+        '200':
+          description: Got the track details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: 'Exits'
+                  artist:
+                    type: string
+                    example: 'Foals'
+                  album:
+                    type: string
+                    example: 'Part 1 Everything Not Saved Will Be Lost'
+                  
+    put:
+      tags:
+        - music
+      summary: Set the currently playing track details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: 'Parfum thérémine - Version acoustique'
+                  artist:
+                    type: string
+                    example: 'LImpératrice'
+                  album:
+                    type: string
+                    example: 'Odyssée (Version acoustique)'
+      responses:
+        '204':
+          description: Set the track details
+    delete:
+      tags:
+        - music
+      summary: Clear the currently playing track
+      responses:
+        '204':
+          description: Current track details cleared
+        
+  /api/status:
+    get:
+      tags:
+        - status
+      summary: Get all the current system status details.
+      description: This is a combination of all other GET responses, plus some additional fields.
+      responses:
+        '200':
+          description: Got the system status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bpm:
+                    type: integer
+                    example: 110
+                  green:
+                    type: boolean
+                  red:
+                    type: boolean
+                  party:
+                    type: boolean
+                  title:
+                    type: string
+                    example: 'Parfum thérémine - Version acoustique'
+                  artist:
+                    type: string
+                    example: 'LImpératrice'
+                  album:
+                    type: string
+                    example: 'Odyssée (Version acoustique)'
+                  redTemperature:
+                    type: number
+                    example: 20.2
+                  greenTemperature:
+                    type: number
+                    example: 21.2
+                  greenHumidity:
+                    type: number
+                    example: 53
+                  redHumidity:
+                    type: number
+                    example: 56
+                    
 servers:
   - url: 'http://traffic-light.fritz.box'
     variables: {}
