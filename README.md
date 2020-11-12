@@ -113,7 +113,14 @@ WebSocket API:
 
 ## Circuit diagram
 
-**TODO HERE**
+Block diagram showing all components, export from Fritzing [file](traffic-light-controller.fzz):
+
+![Overview](traffic-light-controller_bb.png "Overview")
+
+Circuit board and temperature sensor board wiring, export from Fritzing [file](traffic-light-board.fzz) :
+
+![Board](traffic-light-board_bb.png "Board")
+
 
 ## References
 
