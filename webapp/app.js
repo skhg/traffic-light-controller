@@ -41,16 +41,16 @@ function renderSkeleton(){
 
   var basicSkeleton = `
   <div class="grid-container">
-      <div id="red" class="dark-red">
+      <div id="red">
             <div class="sensor infoText" id="red-sensor"></div>
          </div>
-      <div id="green" class="dark-green">
+      <div id="green">
             <div class="sensor infoText" id="green-sensor"></div>
             <div class="infoText" id="playing-song"></div>
          </div>
     </div>
     <div id="circle-container">
-        <div id="circle" class="noParty"></div>
+        <div id="circle"></div>
     </div>
   `
 
@@ -97,19 +97,17 @@ function app(){
 
     renderSkeleton();
 
-    var circleDiv = $('circle');
-    var greenDiv = $('green');
-    var redDiv = $('red');
-
     var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
     var eventName = supportsTouch ? 'touchend' : 'click';
 
-    circleDiv.addEventListener(eventName, party);
-    greenDiv.addEventListener(eventName, green);
-    redDiv.addEventListener(eventName, red);
+    $('circle').addEventListener(eventName, party);
+    $('green').addEventListener(eventName, green);
+    $('red').addEventListener(eventName, red);
 
     webSocketUrl = 'ws://' + window.location.host + ':81';
     refreshQuery = new XMLHttpRequest();
+    
+    updateScreen();
     refreshState();
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
