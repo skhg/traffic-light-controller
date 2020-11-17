@@ -1,0 +1,60 @@
+@startuml
+
+title Traffic Light Controller - Component Diagram
+
+
+
+cloud Internet {
+
+    package "jackhiggins.ie" {
+        interface "DNS Records" as DNS
+    }
+
+    package "GitHub Pages" {
+        component [Hosted\nStatic Files] as Hosted
+    }
+
+}
+
+package "LAN" {
+    
+    node "Client" {
+        package "Webapp" {
+            [State] as WebState
+            [UI]
+            interface "WebSocket\nClient" as WSC
+        }
+    }
+    
+    package "Traffic Light" {
+        node "ESP8266" {
+            [Timing Logic] as Timing
+            [I/O logic] as IO
+            [State]
+            
+            interface "WebSocket\nServer" as WSS
+            interface "REST API\nServer" as REST
+            interface "HTTP Proxy" as HTTP
+        }
+        
+        [Sensors]
+        [Solid-State\nRelay] as Relay
+    }
+}
+
+WebState -> UI
+Sensors -up-> IO
+HTTP -up-( DNS
+DNS -> Hosted
+Timing -> IO
+State -> Timing
+IO -up-> WSS
+REST -down-> State
+REST -> IO
+WSC -down-( WSS
+WSC -> WebState
+UI -( HTTP
+IO -down-> Relay
+UI -down-( REST
+@enduml
+
