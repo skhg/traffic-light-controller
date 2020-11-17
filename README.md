@@ -50,6 +50,8 @@ Other necessary basic tools:
 
 The traffic light comes with 2 steel mounts, which are hollow. At the front, it has two doors which open to reveal the bulbs, reflectors and the transformers behind. These traffic bulbs are designed to run on 10.5V (30VA) as is printed on the transformer label. Behind the reflector, there's actually a lot of empty space. In a normal traffic light installation, all the control logic would be handled by an external box, but we want to have everything self-contained. So we will make the most of the space available.
 
+See the [end of the page](#circuit) for circuit diagrams.
+
 ![Interior](images/interior.jpeg "Empty Interior")
 
 The ESP8266 and the relay board are mounted onto a small wooden board, that itself is bolted to the back of the traffic light case.
@@ -70,7 +72,9 @@ There are a few moving parts in the software here, so i've split this into a cou
 
 ### Overview
 
-The software is intended to allow users on the same LAN to control the traffic light through a browser, without any prior authorisation needed. Security is not considered for this project. The browser shows the state of the system in real time. 
+The software is intended to allow users on the same LAN to control the traffic light through a browser, without any prior authorisation needed. Security is not considered for this project. The browser shows the state of the system in real time.
+
+<p align="center"><img src="images/system_overview.svg"></p>
 
 ### Webapp
 
@@ -148,7 +152,7 @@ If the user simply clicks on one of the lights to turn it on or off, the process
 At a more infrequent interval, we check the temperature of the two enclosures, and also send this via WebSocket to all clients. This is currently only used for informational purposes but it could be used to disable the lights when the temperature exceeds some safety limit.
 
 
-## Circuit diagram
+## Circuit diagram<a name="circuit"></a>
 
 Block diagram showing all components, export from Fritzing [file](traffic-light-controller.fzz):
 
