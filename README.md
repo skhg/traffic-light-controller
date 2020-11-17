@@ -12,7 +12,8 @@ I came across a set of secondhand Ampelmann signals at a flea market, and I deci
 
 I wanted to build something with a _Berlin aesthetic_, and would be fun for visitors to my home to interact with. Unfortunately our visitor numbers [declined severely this year](https://en.wikipedia.org/wiki/COVID-19_pandemic), but still hoping for a great reaction in 2021...?
 
-<p align="center"><a href="https://www.youtube.com/watch?v=a89mtLCUfTs"><img src="images/webapp_demo.gif"/></a></p>
+<p align="center"><a href="https://www.youtube.com/watch?v=a89mtLCUfTs"><img src="images/webapp_demo.gif"/></a><br/>
+ <i>Controlling the traffic lights from the webapp on iOS</i></p>
 
 The lights are switched on and off by solid-state relays. These can be a bit more expensive than an [optocoupler relay](https://www.amazon.de/-/en/gp/product/B078Q326KT/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) but don't make any [noise](https://youtu.be/FhQLq-eqfEc?t=2) as they switch, which is preferable for this project. To control the relays we need a WiFi connected, Arduino compatible board - so the trusty ESP8266 NodeMCU works perfectly here. 220V AC power is required anyway so there is no need for batteries or any low-power considerations.
 
