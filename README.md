@@ -99,7 +99,7 @@ The webapp's [index.html](/webapp/index.html) follows the single-page applicatio
 
 Now we can change anything in the webapp, and the server is unaffected. Great! Well, almost...
 
-Most of the code for this webapp is in the CSS as JS files, not in `index.html` itself. Browsers cache any loaded files for an indeterminate period of time before it re-requests them. If index.html doesn't change, but we've deployed a new JS version, how will our clients know they need to load the new JS version?
+Most of the code for this webapp is in the CSS and JS files, not in `index.html` itself. Browsers cache any loaded files for an indeterminate period of time before it re-requests them. If index.html doesn't change, but we've deployed a new JS version, how will our clients know they need to load the new JS version?
 
 When we push any new version of our code to the git `master` branch, a GitHub [Action](.github/workflows/deploy-gh-pages.yml) runs, that executes the deployment to GitHub Pages where the page is actually served to the public. The trick here is in appending the suffix `?version=latest` to the end of our own CSS and JS files, in the `index.html`. Before it copies the content to the `gh-pages` branch, the action uses the command `sed` to replace that "`latest`" with the value of the variable `$GITHUB_SHA`, which is actually the last commit ID on the `master` branch. (e.g. a value like `b43200422c4f5da6dd70676456737e5af46cb825`).
 
@@ -111,9 +111,21 @@ See the `setup(void)` method in `traffic-light-controller.ino` and the Arduino C
 
 I decided to use both REST and WebSockets in tandem. REST is mostly used by clients to control the server. WebSockets are used to broadcast status information to clients. There are many tools like [Postman](https://www.postman.com/) which allow you to easily experiment with REST API's, so I found this more convenient.
 
-HTTP API: Refer to the Swagger documentation [here](http://jackhiggins.ie/traffic-light-controller/docs/).
+**HTTP API:** Refer to the Swagger documentation [here](http://jackhiggins.ie/traffic-light-controller/docs/).
 
-WebSocket API: **TODO DOCUMENTATION**
+**WebSocket API:**
+The websocket connection sends JSON blobs which the webapp uses to update its internal state. A websocket event can contain one or more fields to update. An example containing environmental info might look like:
+
+```json
+{
+ "redTemperature" : 21.6,
+ "greenTemperature" : 22.7,
+ "greenHumidity" : 55,
+ "redHumidity" : 59
+}	
+```
+
+No data is current sent from the client to the server via the websocket, although this is possible.
 
 ### Arduino Code
 
