@@ -66,6 +66,9 @@ The two temperature sensors are mounted on to identical mini-perfboards. They ar
 
 Once everything is hooked up, we can test it out, and close it up.
 
+<p align="center"><img src="images/bulb_flash.gif"/><br/>
+<i>Testing the bulbs with the solid-state relay</i></p>
+
 ## Software
 
 There are a few moving parts in the software here, so i've split this into a couple of sections.
