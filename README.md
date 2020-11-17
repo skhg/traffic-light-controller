@@ -161,8 +161,3 @@ Block diagram showing all components, export from Fritzing [file](traffic-light-
 Circuit board and temperature sensor board wiring, export from Fritzing [file](traffic-light-board.fzz) :
 
 ![Board](images/traffic-light-board_bb.png "Board")
-
-
-## References
-
-**TODO HERE**
