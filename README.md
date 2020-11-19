@@ -4,7 +4,7 @@
 
 The [_Ampelmännchen_](https://en.wikipedia.org/wiki/Ampelm%C3%A4nnchen) are a popular symbol from East Germany, which display on the pedestrian traffic lights at every street corner. There's even a Berlin-based [retail chain](https://www.ampelmann.de/) that's inspired by their design.
 
-I came across a set of secondhand Ampelmann signals at a flea market, and I decided to make something fun with them.
+I came across a set of secondhand Ampelmann signals at a flea market, and I wanted to control them from my phone. If you'd like to do the same, read on!
 
 ## Overview
 
@@ -15,27 +15,43 @@ I wanted to build something with a _Berlin aesthetic_, and would be fun for visi
 <p align="center"><a href="https://www.youtube.com/watch?v=a89mtLCUfTs"><img src="images/webapp_demo.gif"/></a><br/>
  <i>Controlling the traffic lights from the webapp on iOS</i></p>
 
-The lights are switched on and off by solid-state relays. These can be a bit more expensive than an [optocoupler relay](https://www.amazon.de/-/en/gp/product/B078Q326KT/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) but don't make any [noise](https://youtu.be/FhQLq-eqfEc?t=2) as they switch, which is preferable for this project. To control the relays we need a WiFi connected, Arduino compatible board - so the trusty ESP8266 NodeMCU works perfectly here. 220V AC power is required anyway so there is no need for batteries or any low-power considerations.
+How does it work?
+ 1. The webapp runs in your browser
+ 1. It connects to a web server on the Arduino microcontroller
+ 1. The Arduino controls the lights using relays, which are [electronically-operated switches](https://en.wikipedia.org/wiki/Relay).
+ 1. When the lights change their state, the webapp will stay in sync
+ 1. ???
+ 1. Profit!
 
-The Arduino acts as a web application server (kind-of, see below), and also as an API server to control the lights themselves. Since we can have multiple users controlling the lights at once, each client subscribes to a websocket event stream, to get updates on the lights' status, without polling. More on this below too.
+I used solid-state relays, which can be a bit more expensive than an [optocoupler relay](https://www.amazon.de/-/en/gp/product/B078Q326KT/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) but don't make any [noise](https://youtu.be/FhQLq-eqfEc?t=2) as they switch, which is preferable for this project. To run the system we need a WiFi-capable, Arduino compatible microcontroller board - so the trusty [ESP8266 NodeMCU](https://en.wikipedia.org/wiki/NodeMCU) works perfectly here. 220V AC (mains) power is required anyway so there is no need for batteries or any low-power considerations.
 
-Since we have the option to run the lights in "party mode" where they pulse to a a rhythm, the arduino code also needs to run some time-based logic that can't block anything else the board is doing. This isn't too difficult, and there are some useful [resources](https://forum.arduino.cc/index.php?topic=503368.0) online which explain how to "[do multiple things at once](https://forum.arduino.cc/index.php?topic=223286.0)" with arduino.
+The Arduino acts as a web application server (kind-of, see below), and also as an API server to control the lights themselves. Since we can have multiple users controlling the lights at once, each client subscribes to a WebSocket event stream, to get updates on the lights' status, without polling. More on this below too.
+
+Since we have the option to run the lights in "party mode" where they pulse to a a rhythm, the Arduino code also needs to run some time-based logic that can't block anything else the board is doing. This isn't too difficult, and there are some useful [resources](https://forum.arduino.cc/index.php?topic=503368.0) online which explain how to "[do multiple things at once](https://forum.arduino.cc/index.php?topic=223286.0)" with arduino.
+
+## Prerequisite knowledge
+For anyone following this article i'm assuming a basic knowlegde of:
+ * Electronics assembly techniques (soldering, wiring)
+ * Microcontroller projects (Arduino)
+ * Web technologies (HTTP and WebSockets)
 
 ## Materials Required
 
-Required components:
+For assembly:
  * 1 set of Ampelmann traffic lights
- * 1 [NodeMCU v3 ESP8266](https://www.amazon.de/-/en/gp/product/B074Q2WM1Y/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
- * 1 [Multiple Channel Solid-State Relay](https://www.amazon.de/-/en/gp/product/B07DK6P9CV/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1)
  * Assorted small [M2](https://www.amazon.de/-/en/gp/product/B07SGP8TWS/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1), [M3, M4](https://www.amazon.de/-/en/gp/product/B00B22VHPC/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1) nuts and bolts
- * 2 [DHT11](https://www.amazon.de/-/en/gp/product/B07Q3H24LL/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) temperature sensors
- * A [220V power cable](https://www.amazon.de/-/en/gp/product/B07NSSHP9S/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) capable of taking a few amps, that you can cut apart for inner wiring
- * 2 10kΩ [resistors](https://www.amazon.de/-/en/gp/product/B07Q87JZ9G/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
- * [Perfboard](https://www.amazon.de/-/en/gp/product/B07BDKG68Q/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
- * [JST Headers](https://www.amazon.de/YIXISI-Connector-JST-XH-Female-Adapter/dp/B082ZLYRRN/ref=sr_1_1_sspa?dchild=1&keywords=jst+kit&qid=1605108398&sr=8-1-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUFITU9OODc2TFg4MzEmZW5jcnlwdGVkSWQ9QTAxNTU4NzMyOVdJRFVETUhCV1Y3JmVuY3J5cHRlZEFkSWQ9QTAwODA5ODVQWFZCU00yNTJBSlYmd2lkZ2V0TmFtZT1zcF9hdGYmYWN0aW9uPWNsaWNrUmVkaXJlY3QmZG9Ob3RMb2dDbGljaz10cnVl)
- * [Ribbon Cable](https://www.amazon.de/-/en/gp/product/B076CLY8NH/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
- * A little [wooden board](https://www.amazon.de/-/en/gp/product/B07D76MKFY/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
- * Double-sided sticky tape
+ * A little [wooden board](https://www.amazon.de/-/en/gp/product/B07D76MKFY/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) - for mounting our controller securely
+ * Double-sided sticky tape - for mounting the temperature sensors
+ 
+Electronic components:
+ * 1 [NodeMCU v3 ESP8266](https://www.amazon.de/-/en/gp/product/B074Q2WM1Y/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) - The microcontroller board
+ * 1 Multiple Channel [Solid-State Relay](https://www.amazon.de/-/en/gp/product/B07DK6P9CV/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1) - the electronic switch which controls the lightbulbs
+ * 2x [DHT11](https://www.amazon.de/-/en/gp/product/B07Q3H24LL/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) - Temperature/humidity sensors
+ * A [220V power cable](https://www.amazon.de/-/en/gp/product/B07NSSHP9S/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) - Should capable of taking a few amps, you may also need to cut this apart for interior wiring
+ * 2 10kΩ [resistors](https://www.amazon.de/-/en/gp/product/B07Q87JZ9G/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) - Required to operate the DHT11 sensors
+ * [Perfboard](https://www.amazon.de/-/en/gp/product/B07BDKG68Q/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) - To solder everything together on
+ * [Ribbon Cable](https://www.amazon.de/-/en/gp/product/B076CLY8NH/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) - To connect to components off the main board, such as the temperature sensors and relay.
+ * [JST Headers](https://www.amazon.de/YIXISI-Connector-JST-XH-Female-Adapter/dp/B082ZLYRRN/ref=sr_1_1_sspa?dchild=1&keywords=jst+kit&qid=1605108398&sr=8-1-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUFITU9OODc2TFg4MzEmZW5jcnlwdGVkSWQ9QTAxNTU4NzMyOVdJRFVETUhCV1Y3JmVuY3J5cHRlZEFkSWQ9QTAwODA5ODVQWFZCU00yNTJBSlYmd2lkZ2V0TmFtZT1zcF9hdGYmYWN0aW9uPWNsaWNrUmVkaXJlY3QmZG9Ob3RMb2dDbGljaz10cnVl) - Plugs which will terminate the cable connections.
  * A generic USB power supply
  * A power strip
  
@@ -45,7 +61,19 @@ Other necessary basic tools:
  * Screwdriver
  * Wire stripper
  * Power drill
- 
+
+## Circuit diagram<a name="circuit"></a>
+
+Here's how the circuit looks in a block diagram showing all components laid out flat.
+
+![Overview](images/traffic-light-controller_bb.png "Overview")
+
+
+And here's how the circuit board and temperature sensor board are wired on the perfboard. Depending on how you mount this inside the case, and what size perfboard is used, you may have more space to play around with.
+
+![Board](images/traffic-light-board_bb.png "Board")
+<i>(Exported from Fritzing [file](traffic-light-board.fzz))</i>
+
 ## Construction
 
 The traffic light comes with 2 steel mounts, which are hollow. At the front, it has two doors which open to reveal the bulbs, reflectors and the transformers behind. These traffic bulbs are designed to run on 10.5V (30VA) as is printed on the transformer label. Behind the reflector, there's actually a lot of empty space. In a normal traffic light installation, all the control logic would be handled by an external box, but we want to have everything self-contained. So we will make the most of the space available.
@@ -154,13 +182,6 @@ If the user simply clicks on one of the lights to turn it on or off, the process
 
 At a more infrequent interval, we check the temperature of the two enclosures, and also send this via WebSocket to all clients. This is currently only used for informational purposes but it could be used to disable the lights when the temperature exceeds some safety limit.
 
+## Thanks
 
-## Circuit diagram<a name="circuit"></a>
-
-Block diagram showing all components, export from Fritzing [file](traffic-light-controller.fzz):
-
-![Overview](images/traffic-light-controller_bb.png "Overview")
-
-Circuit board and temperature sensor board wiring, export from Fritzing [file](traffic-light-board.fzz) :
-
-![Board](images/traffic-light-board_bb.png "Board")
+Credit to [@mrcosta](https://github.com/mrcosta) for his help reviewing this article.
