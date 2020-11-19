@@ -52,19 +52,19 @@ function renderSkeleton(){
   var appleIcon = document.createElement('link');
   appleIcon.rel = 'apple-touch-icon';
   appleIcon.sizes = '180x180';
-  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=abce0d20da12bc1f7eedb41c783d2ada9adf41b2';
+  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=a51866466a8cb1f4884e3a97bd556ade255ed435';
   document.head.appendChild(appleIcon);
 
   var icon = document.createElement('link');
   icon.rel = 'icon';
   icon.type = 'image/png';
-  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=abce0d20da12bc1f7eedb41c783d2ada9adf41b2';
+  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=a51866466a8cb1f4884e3a97bd556ade255ed435';
   document.head.appendChild(icon);
 
   var stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
   stylesheet.type = 'text/css';
-  stylesheet.href = webRoot + '/style.css?version=abce0d20da12bc1f7eedb41c783d2ada9adf41b2';
+  stylesheet.href = webRoot + '/style.css?version=a51866466a8cb1f4884e3a97bd556ade255ed435';
   document.head.appendChild(stylesheet);
 
   document.title = "Traffic Light";
