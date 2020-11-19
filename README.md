@@ -134,6 +134,8 @@ The webapp's [index.html](/webapp/index.html) follows the single-page applicatio
 
 Now we can change anything in the webapp, and the server is unaffected. Great! Well, almost...
 
+### Webapp resource versioning
+
 Most of the code for this webapp is in the CSS and JS files, not in `index.html` itself. Browsers cache any loaded files for an indeterminate period of time before it re-requests them. If index.html doesn't change, but we've deployed a new JS version, how will our clients know they need to load the new JS version?
 
 When we push any new version of our code to the git `master` branch, a GitHub [Action](.github/workflows/deploy-gh-pages.yml) runs, that executes the deployment to GitHub Pages where the page is actually served to the public. The trick here is in appending the suffix `?version=latest` to the end of our own CSS and JS files, in the `index.html`. Before it copies the content to the `gh-pages` branch, the action uses the command `sed` to replace that "`latest`" with the value of the variable `$GITHUB_SHA`, which is actually the last commit ID on the `master` branch. (e.g. a value like `b43200422c4f5da6dd70676456737e5af46cb825`).
