@@ -166,7 +166,7 @@ No data is current sent from the client to the server via the websocket, althoug
 
 ### Arduino Code
 
-The arduino code is all within a [single file](traffic-light-controller.ino).
+The arduino code is all within a [single file](traffic-light-controller.ino) that includes explanatory comments.
 
 It begins with a set of definitions for pin locations, library imports and hardcoded values for things like HTTP Content-Types and response code values. Following that are a set of variable which can change at runtime, all prefixed with underscores. A few objects are also initialised here, including those for the web server, web socket server, WiFi client, and temperature sensors. The "system clock" is maintained by the `_currentMillis` field.
 
