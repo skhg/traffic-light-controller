@@ -32,8 +32,10 @@ Since we have the option to run the lights in "party mode" where they pulse to a
 ## Prerequisite knowledge
 For anyone following this article i'm assuming a basic knowlegde of:
  * Electronics assembly techniques (soldering, wiring)
- * Microcontroller projects (Arduino)
- * Web technologies (HTTP and WebSockets)
+ * Microcontroller projects and concepts (Arduino)
+ * Web technologies (HTTP, proxies and WebSockets)
+ * Software lifecycle concepts (Deployment, versioning)
+ * Software control flow concepts (Loops, functions, program state)
 
 ## Materials Required
 
