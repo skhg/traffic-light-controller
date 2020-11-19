@@ -78,8 +78,6 @@ And here's how the circuit board and temperature sensor board are wired on the p
 
 The traffic light comes with 2 steel mounts, which are hollow. At the front, it has two doors which open to reveal the bulbs, reflectors and the transformers behind. These traffic bulbs are designed to run on 10.5V (30VA) as is printed on the transformer label. Behind the reflector, there's actually a lot of empty space. In a normal traffic light installation, all the control logic would be handled by an external box, but we want to have everything self-contained. So we will make the most of the space available.
 
-See the [end of the page](#circuit) for circuit diagrams.
-
 ![Interior](images/interior.jpeg "Empty Interior")
 
 The ESP8266 and the relay board are mounted onto a small wooden board, that itself is bolted to the back of the traffic light case.
@@ -107,7 +105,9 @@ The software is intended to allow users on the same LAN to control the traffic l
 
 <p align="center"><img src="images/system_overview.svg"></p>
 
-### Webapp
+Each device on your local network has it's own [private](https://en.wikipedia.org/wiki/Private_network) IP address (e.g. `192.168.1.20`). Some routers such as the FritzBox also let you browse by local hostnames, so that `192.168.1.20` is also accessible at `mydevice.fritz.box`. For the traffic light, the device hostname is `traffic-light` so we can visit it at `http://traffic-light.fritz.box`.
+
+### Webapp architecture & performance
 
 The webapp is a very simple responsive single-page application. It shows:
 * Red on/off
@@ -116,7 +116,7 @@ The webapp is a very simple responsive single-page application. It shows:
 * Temperature of the red and green enclosures
 * Currently playing song information.
 
-Code is under the [/webapp](/webapp) directory. No external dependencies are required since it's just relying on standard browser features, like [CSS transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform), [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket), and [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest). You can preview the running application [here](http://jackhiggins.ie/traffic-light-controller/) although it won't control anything, since of course you're not on my LAN. If you visited it from the local network, at e.g. `http://traffic-light.local.lan` it would work in full.
+Code is under the [/webapp](/webapp) directory. No external dependencies are required since it's just relying on standard browser features, like [CSS transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform), [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket), and [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest). You can preview the running application [here](http://jackhiggins.ie/traffic-light-controller/) although it won't control anything, since of course you're not on my LAN. If you visited it from the local network, at e.g. `http://traffic-light.fritz.box` it would work fully.
 
 <img align="right" width="40%" src="images/webapp_state.png">
 
@@ -128,9 +128,9 @@ Finally, we want to reduce load on the server wherever possible. Remember the ES
 
 ### Webapp Deployment
 
-The ESP8266 is busy handling API requests and timing code, so it doesn't have the necessary resources to serve the webapp itself. Also, making cosmetic changes to the webapp is difficult, if I need to physically connect to the hardware every time. [OTA](https://tttapa.github.io/ESP8266/Chap13%20-%20OTA.html) solutions also seem unsuited here. Much easier to keep the two separate. How to do that easily?
+The ESP8266 is busy handling API requests and timing code, so it doesn't have the necessary resources to serve the webapp itself. Also, making cosmetic changes to the webapp is difficult, if I need to physically connect to the hardware every time I want to apply an update.
 
-The webapp's [index.html](/webapp/index.html) follows the single-page application principle that everything should be rendered by Javascript, making the HTML content itself very small. Like 1.3kB small. Everything else is loaded by the client's browser, without needing to make further calls to the server. So the webapp is actually hosted in its entirety [on GitHub Pages](http://jackhiggins.ie/traffic-light-controller/). Browsing to `http://traffic-light.local.lan` makes a proxy request to load the index.html content on GitHub pages, and returns it to the client.
+The webapp's [index.html](/webapp/index.html) follows the single-page application principle that everything should be rendered by Javascript, making the HTML content itself very small. Like _550 bytes_ small. Everything else is loaded by the client's browser, without needing to make further calls to the server. So the webapp is actually hosted in its entirety [on GitHub Pages](http://jackhiggins.ie/traffic-light-controller/), a free [static site hosting tool](https://pages.github.com/). Hitting `/index.html` actually makes a proxy request to GitHub pages, and returns the result to the client browser.
 
 Now we can change anything in the webapp, and the server is unaffected. Great! Well, almost...
 
