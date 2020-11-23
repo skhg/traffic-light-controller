@@ -1,38 +1,38 @@
-var serverAddr;
-var refreshQuery;
-var webSocketUrl;
-var state;
-var webSocket;
-var textSizeBugLoopId;
+let serverAddr;
+let refreshQuery;
+let webSocketUrl;
+let state;
+let webSocket;
+let textSizeBugLoopId;
 
 function connect() {
-   webSocket = new WebSocket(webSocketUrl);
-   webSocket.onopen = function() {
-      console.debug('WebSocket connected.');
-   };
+    webSocket = new WebSocket(webSocketUrl);
+    webSocket.onopen = function() {
+        console.debug('WebSocket connected.');
+    };
 
-   webSocket.onmessage = handleWebSocketMessage;
+    webSocket.onmessage = handleWebSocketMessage;
 
-   webSocket.onclose = function(e) {
-   if(!document.hidden){
-      console.debug('WebSocket is closed. Reconnect will be attempted in 1 second.', e.reason);
-      setTimeout(function() {
-         refreshState();
-         connect();
-      }, 1000);
-   }
-  };
+    webSocket.onclose = function(e) {
+        if(!document.hidden){
+            console.debug('WebSocket is closed. Reconnect will be attempted in 1 second.', e.reason);
+            setTimeout(function() {
+                refreshState();
+                connect();
+            }, 1000);
+        }
+    };
 
-   webSocket.onerror = function(err) {
-      console.error('Closing socket due to error.');
-      disconnect();
-   };
-};
+    webSocket.onerror = function(err) {
+        console.error('Closing socket due to error', err);
+        disconnect();
+    };
+}
 
 function renderSkeleton(){
-  var webRoot = 'https://jackhiggins.ie/traffic-light-controller';
+    var webRoot = 'https://jackhiggins.ie/traffic-light-controller';
 
-  var basicSkeleton = `
+    var basicSkeleton = `
   <div class="grid-container">
       <div id="red">
             <div class="sensor infoText" id="red-sensor"></div>
@@ -47,30 +47,30 @@ function renderSkeleton(){
     </div>
   `
 
-  document.body.innerHTML = basicSkeleton;
+    document.body.innerHTML = basicSkeleton;
 
-  var appleIcon = document.createElement('link');
-  appleIcon.rel = 'apple-touch-icon';
-  appleIcon.sizes = '180x180';
-  appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=latest';
-  document.head.appendChild(appleIcon);
+    var appleIcon = document.createElement('link');
+    appleIcon.rel = 'apple-touch-icon';
+    appleIcon.sizes = '180x180';
+    appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=latest';
+    document.head.appendChild(appleIcon);
 
-  var icon = document.createElement('link');
-  icon.rel = 'icon';
-  icon.type = 'image/png';
-  icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=latest';
-  document.head.appendChild(icon);
+    var icon = document.createElement('link');
+    icon.rel = 'icon';
+    icon.type = 'image/png';
+    icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=latest';
+    document.head.appendChild(icon);
 
-  var stylesheet = document.createElement('link');
-  stylesheet.rel = 'stylesheet';
-  stylesheet.type = 'text/css';
-  stylesheet.href = webRoot + '/style.css?version=latest';
-  document.head.appendChild(stylesheet);
+    var stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.type = 'text/css';
+    stylesheet.href = webRoot + '/style.css?version=latest';
+    document.head.appendChild(stylesheet);
 
-  document.title = "Traffic Light";
+    document.title = "Traffic Light";
 }
 
-function app(){
+function app(){ // eslint-disable-line no-unused-vars
     serverAddr = '/api';
     state = {
         'bpm' : 100,
@@ -95,147 +95,146 @@ function app(){
 
     webSocketUrl = 'ws://' + window.location.host + ':81';
     refreshQuery = new XMLHttpRequest();
-    
+
     textSizeBugLoopId = setInterval(textSizeBugFix, 100);
 
     refreshState();
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
     window.onunload = window.onbeforeunload = disconnect();
-};
+}
 
 function textSizeBugFix(){
-  var circleFontSize = window.getComputedStyle($('circle'), null).getPropertyValue('font-size');
-  var expectedFontSize = "90px";
+    var circleFontSize = window.getComputedStyle($('circle'), null).getPropertyValue('font-size');
+    var expectedFontSize = "90px";
 
-  if(circleFontSize === expectedFontSize){
-    console.debug("Circle font size ok!");
-    clearInterval(textSizeBugLoopId);
-  }else{
-    $('circle').style.fontSize = expectedFontSize;
-    $('circle').style.display = 'none';
-    $('circle').style.display = 'block';
-  }
+    if(circleFontSize === expectedFontSize){
+        console.debug("Circle font size ok!");
+        clearInterval(textSizeBugLoopId);
+    }else{
+        $('circle').style.fontSize = expectedFontSize;
+        $('circle').style.display = 'none';
+        $('circle').style.display = 'block';
+    }
 
 }
 
 function disconnect(){
-   if(webSocket.readyState === WebSocket.OPEN){
-      webSocket.close();
-   }
-};
+    if(webSocket.readyState === WebSocket.OPEN){
+        webSocket.close();
+    }
+}
 
 function visibilityHandler(){
-   if(document.hidden){
-      disconnect();
-   }else{
-      refreshState();
-      connect();
-   }
-};
+    if(document.hidden){
+        disconnect();
+    }else{
+        refreshState();
+        connect();
+    }
+}
 
 function handleWebSocketMessage(event){
-   var messageContents = JSON.parse(event.data);
-   
-   for(var key of Object.keys(messageContents)){
-      state[key] = messageContents[key];
-   }
+    var messageContents = JSON.parse(event.data);
 
-   updateScreen();
-};
+    for(var key of Object.keys(messageContents)){
+        state[key] = messageContents[key];
+    }
+
+    updateScreen();
+}
 
 function updateScreen(){
-  var circleDiv = $('circle');
-  var greenDiv = $('green');
-  var redDiv = $('red');
-  var redSensorDiv = $('red-sensor');
-  var greenSensorDiv = $('green-sensor');
-  var playingSongDiv = $('playing-song');
+    var circleDiv = $('circle');
+    var greenDiv = $('green');
+    var redDiv = $('red');
+    var redSensorDiv = $('red-sensor');
+    var greenSensorDiv = $('green-sensor');
+    var playingSongDiv = $('playing-song');
 
-	if(state['green']){
-		greenDiv.className = 'bright-green';
-	} else {
-		greenDiv.className = 'dark-green';
-	}
-	if(state['red']){
-		redDiv.className = 'bright-red';
-	} else {
-		redDiv.className = 'dark-red';
-	}
-  if(state['party']){
-    circleDiv.className = 'party';
-    circleDiv.innerHTML = '' + state['bpm'] + ' BPM';
-  }else{
-    circleDiv.className = 'noParty';
-    circleDiv.innerHTML = 'Party Mode';
-  }
+    if(state['green']){
+        greenDiv.className = 'bright-green';
+    } else {
+        greenDiv.className = 'dark-green';
+    }
+    if(state['red']){
+        redDiv.className = 'bright-red';
+    } else {
+        redDiv.className = 'dark-red';
+    }
+    if(state['party']){
+        circleDiv.className = 'party';
+        circleDiv.innerHTML = '' + state['bpm'] + ' BPM';
+    }else{
+        circleDiv.className = 'noParty';
+        circleDiv.innerHTML = 'Party Mode';
+    }
 
-  greenSensorDiv.innerHTML = "" + Math.round(state['greenTemperature']) + "°C";
-  redSensorDiv.innerHTML = "" + Math.round(state['redTemperature']) + "°C";
+    greenSensorDiv.innerHTML = "" + Math.round(state['greenTemperature']) + "°C";
+    redSensorDiv.innerHTML = "" + Math.round(state['redTemperature']) + "°C";
 
-  var artistLine = state.artist.length === 0 ? "" : "" + state["artist"] + "<br/>";
-  var titleLine = state.title.length === 0 ? "" : "<i>" + state['title'] + "</i>" + "<br/>";
-  var albumLine = state.album.length === 0 ? "" : "" + state["album"];
-  playingSongDiv.innerHTML = artistLine + titleLine + albumLine;
-};
+    var artistLine = state.artist.length === 0 ? "" : "" + state["artist"] + "<br/>";
+    var titleLine = state.title.length === 0 ? "" : "<i>" + state['title'] + "</i>" + "<br/>";
+    var albumLine = state.album.length === 0 ? "" : "" + state["album"];
+    playingSongDiv.innerHTML = artistLine + titleLine + albumLine;
+}
 
 function refreshState(){
-  refreshQuery = new XMLHttpRequest();
-  refreshQuery.open('GET', serverAddr + '/status', true);
-  refreshQuery.onreadystatechange = function(){
-    if (refreshQuery.readyState == XMLHttpRequest.DONE) {
-      if (refreshQuery.status == 200) {
-        state =  JSON.parse(refreshQuery.responseText);
-        updateScreen();
-      }
-    }
-  };
-  refreshQuery.send();
-};
+    refreshQuery = new XMLHttpRequest();
+    refreshQuery.open('GET', serverAddr + '/status', true);
+    refreshQuery.onreadystatechange = function(){
+        if (refreshQuery.readyState == XMLHttpRequest.DONE) {
+            if (refreshQuery.status == 200) {
+                state =  JSON.parse(refreshQuery.responseText);
+                updateScreen();
+            }
+        }
+    };
+    refreshQuery.send();
+}
 
 function green(){
-  refreshQuery.abort();
-  var xhr = new XMLHttpRequest();
-  if(state['green']){
-    xhr.open('DELETE', serverAddr + '/green', true);
-  }else{
-    xhr.open('PUT', serverAddr + '/green', true);
-  }
-	
-  xhr.send();
-  state['green'] = !state['green'];
-  updateScreen();
-};
+    refreshQuery.abort();
+    var xhr = new XMLHttpRequest();
+    if(state['green']){
+        xhr.open('DELETE', serverAddr + '/green', true);
+    }else{
+        xhr.open('PUT', serverAddr + '/green', true);
+    }
+
+    xhr.send();
+    state['green'] = !state['green'];
+    updateScreen();
+}
 
 function red(){
-	refreshQuery.abort();
-	var xhr = new XMLHttpRequest();
-	if(state['red']){
-		xhr.open('DELETE', serverAddr + '/red', true);
-	}else{
-		xhr.open('PUT', serverAddr + '/red', true);
-	}
-	
-  xhr.send();
-  state['red'] = !state['red'];
-  updateScreen();
-};
+    refreshQuery.abort();
+    var xhr = new XMLHttpRequest();
+    if(state['red']){
+        xhr.open('DELETE', serverAddr + '/red', true);
+    }else{
+        xhr.open('PUT', serverAddr + '/red', true);
+    }
+
+    xhr.send();
+    state['red'] = !state['red'];
+    updateScreen();
+}
 
 function party(){
-  refreshQuery.abort();
-  if(state['party']){
-    var xhr = new XMLHttpRequest();
-    xhr.open('DELETE', serverAddr + '/party', true);
-    xhr.send();
-	} else {
-    var xhr = new XMLHttpRequest();
-    xhr.open('PUT', serverAddr + '/party', true);
-    xhr.send();
-	}
-	state['party'] = !state['party'];
-  updateScreen();
-};
+    refreshQuery.abort();
+    const xhr = new XMLHttpRequest();
+    if(state['party']){
+        xhr.open('DELETE', serverAddr + '/party', true);
+        xhr.send();
+    } else {
+        xhr.open('PUT', serverAddr + '/party', true);
+        xhr.send();
+    }
+    state['party'] = !state['party'];
+    updateScreen();
+}
 
 function $(elementId){
-  return document.getElementById(elementId);
+    return document.getElementById(elementId);
 }
