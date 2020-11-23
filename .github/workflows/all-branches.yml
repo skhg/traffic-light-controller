@@ -5,12 +5,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install ESlint
+      - name: Install tools
         run: |
           yarn add eslint
+          yarn add stylelint
       - name: Run ESLint checks
         run: |
           yarn run eslint ./webapp/*.js
+      - name: Run StyleLint checks
+        run: |
+          yarn run stylelint ./webapp/*.css
       - name: Cleanup
         run: |
           rm -rf node_modules
