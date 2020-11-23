@@ -24,10 +24,10 @@ function connect() {
     };
 
     webSocket.onerror = function(err) {
-        console.error('Closing socket due to error.');
+        console.error('Closing socket due to error', err);
         disconnect();
     };
-};
+}
 
 function renderSkeleton(){
     var webRoot = 'https://jackhiggins.ie/traffic-light-controller';
@@ -70,7 +70,7 @@ function renderSkeleton(){
     document.title = "Traffic Light";
 }
 
-function app(){
+function app(){ // eslint-disable-line no-unused-vars
     serverAddr = '/api';
     state = {
         'bpm' : 100,
@@ -102,7 +102,7 @@ function app(){
     connect();
     document.addEventListener('visibilitychange', visibilityHandler);
     window.onunload = window.onbeforeunload = disconnect();
-};
+}
 
 function textSizeBugFix(){
     var circleFontSize = window.getComputedStyle($('circle'), null).getPropertyValue('font-size');
@@ -123,7 +123,7 @@ function disconnect(){
     if(webSocket.readyState === WebSocket.OPEN){
         webSocket.close();
     }
-};
+}
 
 function visibilityHandler(){
     if(document.hidden){
@@ -132,7 +132,7 @@ function visibilityHandler(){
         refreshState();
         connect();
     }
-};
+}
 
 function handleWebSocketMessage(event){
     var messageContents = JSON.parse(event.data);
@@ -142,7 +142,7 @@ function handleWebSocketMessage(event){
     }
 
     updateScreen();
-};
+}
 
 function updateScreen(){
     var circleDiv = $('circle');
@@ -177,7 +177,7 @@ function updateScreen(){
     var titleLine = state.title.length === 0 ? "" : "<i>" + state['title'] + "</i>" + "<br/>";
     var albumLine = state.album.length === 0 ? "" : "" + state["album"];
     playingSongDiv.innerHTML = artistLine + titleLine + albumLine;
-};
+}
 
 function refreshState(){
     refreshQuery = new XMLHttpRequest();
@@ -191,7 +191,7 @@ function refreshState(){
         }
     };
     refreshQuery.send();
-};
+}
 
 function green(){
     refreshQuery.abort();
@@ -205,7 +205,7 @@ function green(){
     xhr.send();
     state['green'] = !state['green'];
     updateScreen();
-};
+}
 
 function red(){
     refreshQuery.abort();
@@ -219,22 +219,21 @@ function red(){
     xhr.send();
     state['red'] = !state['red'];
     updateScreen();
-};
+}
 
 function party(){
     refreshQuery.abort();
+    const xhr = new XMLHttpRequest();
     if(state['party']){
-        var xhr = new XMLHttpRequest();
         xhr.open('DELETE', serverAddr + '/party', true);
         xhr.send();
     } else {
-        var xhr = new XMLHttpRequest();
         xhr.open('PUT', serverAddr + '/party', true);
         xhr.send();
     }
     state['party'] = !state['party'];
     updateScreen();
-};
+}
 
 function $(elementId){
     return document.getElementById(elementId);
