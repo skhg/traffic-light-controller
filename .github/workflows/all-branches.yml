@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install tools
+      - name: Install webapp tools
         run: |
           yarn add eslint
           yarn add stylelint
@@ -15,6 +15,11 @@ jobs:
       - name: Run StyleLint checks
         run: |
           yarn run stylelint ./webapp/*.css
+      - name: Validate Swagger docs
+      - uses: mbowman100/swagger-validator-action@master
+        with:
+          files: |
+            openapi-spec.yaml
       - name: Cleanup
         run: |
           rm -rf node_modules
