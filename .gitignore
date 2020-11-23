@@ -1,3 +1,5 @@
 index_html_gz.h
 *.iml
 *.gz
+.idea/
+

@@ -1,0 +1,13 @@
+name: All Branches
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up ESlint
+        run: |
+          npm install -g eslint
+      - name: Run ESLint checks
+        run: |
+          eslint ./webapp/*.js
