@@ -16,7 +16,7 @@ jobs:
         run: |
           yarn run stylelint ./webapp/*.css
       - name: Validate Swagger docs
-      - uses: mbowman100/swagger-validator-action@master
+        uses: mbowman100/swagger-validator-action@master
         with:
           files: |
             openapi-spec.yaml
