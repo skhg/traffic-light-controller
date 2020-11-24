@@ -5,3 +5,4 @@ index_html_gz.h
 node_modules/
 package.json
 yarn.lock
+.python-version

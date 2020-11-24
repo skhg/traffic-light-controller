@@ -5,6 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install Arduino tools
+        run: |
+          pip install cpplint
       - name: Install webapp tools
         run: |
           yarn add eslint
