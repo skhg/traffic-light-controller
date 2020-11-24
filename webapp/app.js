@@ -115,6 +115,11 @@ function app(){ // eslint-disable-line no-unused-vars
     window.onunload = window.onbeforeunload = disconnectWebSocket();
 }
 
+/**
+ * Attempts to fix the bug where the text "Party Mode" is the wrong size at startup.
+ * Appears not to work. todo remove this
+ * @return {undefined}
+ */
 function textSizeBugFix(){
     const circleFontSize = window.getComputedStyle($('circle'), null).getPropertyValue('font-size');
     const expectedFontSize = "90px";
@@ -135,6 +140,10 @@ function disconnectWebSocket(){
     }
 }
 
+/**
+ * Handler for browser visibility change events
+ * @return {undefined}
+ */
 function onBrowserShownOrHidden(){
     if(document.hidden){
         disconnectWebSocket();
