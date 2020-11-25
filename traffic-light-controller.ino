@@ -26,7 +26,8 @@
 #include <WebSocketsServer.h>
 #include <DHT.h>
 
-const String STATIC_CONTENT_INDEX_LOCATION = "http://jackhiggins.ie/traffic-light-controller/";
+const String STATIC_CONTENT_INDEX_LOCATION =
+"http://jackhiggins.ie/traffic-light-controller/";
 
 const String HOST_NAME = "traffic-light";
 
@@ -57,9 +58,9 @@ boolean _redLit = false;
 boolean _greenLit = false;
 int _bpm = 100;
 boolean _partyOn = false;
-unsigned long _currentMillis = millis();
-unsigned long _beatStartMillis = millis();
-unsigned long _temperatureReadMillis = millis();
+uint64_t _currentMillis = millis();
+uint64_t _beatStartMillis = millis();
+uint64_t _temperatureReadMillis = millis();
 int _rhythmStep = 0;
 
 String _currentTitle = "";
@@ -72,14 +73,17 @@ double _greenTemperature = 0.0;
 double _greenHumidity = 0.0;
 
 const int RHYTHM_STEPS = 8;
-const int RHYTHM_PATTERN[] = {RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH, BOTH_FLASH, BOTH_FLASH};
+const int RHYTHM_PATTERN[] = {
+  RED_FLASH, GREEN_FLASH, RED_FLASH, GREEN_FLASH,
+  RED_FLASH, GREEN_FLASH, BOTH_FLASH, BOTH_FLASH
+};
 
 void sendToWebSocketClients(String webSocketMessage) {
   WEB_SOCKET_SERVER.broadcastTXT(webSocketMessage);
 }
 
 void lightSwitch(int light, boolean newState) {
-  digitalWrite(light, !newState);  // Because LOW means ON for the relay i'm using
+  digitalWrite(light, !newState);  // LOW means ON for the relay i'm using
 
   switch (light) {
     case RED_LIGHT: {
@@ -106,9 +110,21 @@ void partyFlash() {
     lightSwitch(GREEN_LIGHT, false);
   } else {
     switch (RHYTHM_PATTERN[_rhythmStep / 2]) {
-      case RED_FLASH: lightSwitch(RED_LIGHT, true); lightSwitch(GREEN_LIGHT, false); break;
-      case GREEN_FLASH: lightSwitch(RED_LIGHT, false); lightSwitch(GREEN_LIGHT, true); break;
-      case BOTH_FLASH: lightSwitch(RED_LIGHT, true); lightSwitch(GREEN_LIGHT, true); break;
+      case RED_FLASH: {
+        lightSwitch(RED_LIGHT, true);
+        lightSwitch(GREEN_LIGHT, false);
+        break;
+      }
+      case GREEN_FLASH: {
+        lightSwitch(RED_LIGHT, false);
+        lightSwitch(GREEN_LIGHT, true);
+        break;
+      }
+      case BOTH_FLASH: {
+        lightSwitch(RED_LIGHT, true);
+        lightSwitch(GREEN_LIGHT, true);
+        break;
+      }
     }
   }
 }
@@ -116,7 +132,8 @@ void partyFlash() {
 void readSensors() {
   _currentMillis = millis();
 
-  if (_currentMillis - _temperatureReadMillis > TEMPERATURE_READ_INTERVAL_MILLIS) {
+  if (_currentMillis - _temperatureReadMillis >
+        TEMPERATURE_READ_INTERVAL_MILLIS) {
     _temperatureReadMillis = _currentMillis;
 
     _redHumidity = SENSOR_RED.readHumidity();
@@ -158,7 +175,8 @@ void rhythm() {
 
 void htmlRootContent() {
   if (HTTP_SERVER.method() != HTTP_GET) {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
+    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
+      METHOD_NOT_ALLOWED_MESSAGE);
     return;
   }
 
@@ -199,7 +217,8 @@ void handleParty() {
   } else if (HTTP_SERVER.method() == HTTP_GET) {
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, partyJson());
   } else {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
+    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
+      METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
@@ -225,7 +244,8 @@ void handleRed() {
   } else if (HTTP_SERVER.method() == HTTP_GET) {
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, redLightJson());
   } else {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
+    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
+      METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
@@ -255,13 +275,15 @@ void handleGreen() {
   } else if (HTTP_SERVER.method() == HTTP_GET) {
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, greenLightJson());
   } else {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
+    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
+      METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
 void handleStatus() {
   if (HTTP_SERVER.method() != HTTP_GET) {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
+    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
+      METHOD_NOT_ALLOWED_MESSAGE);
   } else {
     String content;
 
@@ -286,7 +308,8 @@ void handleStatus() {
 void handleTempo() {
   if (HTTP_SERVER.method() == HTTP_PUT) {
     if (HTTP_SERVER.hasArg("plain") == false) {
-      HTTP_SERVER.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN, "Missing body");
+      HTTP_SERVER.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN,
+        "Missing body");
     } else {
       StaticJsonDocument<JSON_OBJECT_SIZE(1) + 10> bpmJson;
       deserializeJson(bpmJson, HTTP_SERVER.arg("plain"));
@@ -298,7 +321,8 @@ void handleTempo() {
   } else if (HTTP_SERVER.method() == HTTP_GET) {
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, tempoJson());
   } else {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
+    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
+      METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
@@ -313,7 +337,8 @@ String tempoJson() {
 void handleSong() {
   if (HTTP_SERVER.method() == HTTP_PUT) {
     if (HTTP_SERVER.hasArg("plain") == false) {
-      HTTP_SERVER.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN, "Missing body");
+      HTTP_SERVER.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN,
+        "Missing body");
     } else {
       StaticJsonDocument<JSON_OBJECT_SIZE(3) + 1000> newSongJson;
       deserializeJson(newSongJson, HTTP_SERVER.arg("plain"));
@@ -323,7 +348,8 @@ void handleSong() {
       _currentAlbum = album;
       const char* title = newSongJson["title"];
       _currentTitle = title;
-      Serial.println("Song is now: " + _currentTitle + " from "+ _currentAlbum + " by " + _currentArtist);
+      Serial.println("Song is now: " + _currentTitle + " from "+ _currentAlbum +
+        " by " + _currentArtist);
       HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
       sendToWebSocketClients(songJson());
     }
@@ -337,7 +363,8 @@ void handleSong() {
     HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
     sendToWebSocketClients(songJson());
   } else {
-    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN, METHOD_NOT_ALLOWED_MESSAGE);
+    HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
+      METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
@@ -351,7 +378,8 @@ String songJson() {
   return content;
 }
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload,
+  size_t length) {
   IPAddress ip = WEB_SOCKET_SERVER.remoteIP(num);
 
   switch (type) {
@@ -414,7 +442,9 @@ void setup(void) {
   Serial.println("HTTP server started");
 
   WEB_SOCKET_SERVER.begin();
-  WEB_SOCKET_SERVER.enableHeartbeat(1000, 1000, 1);  // Disconnect after a single failed heartbeat
+
+  // Disconnect after a single failed heartbeat
+  WEB_SOCKET_SERVER.enableHeartbeat(1000, 1000, 1);
   WEB_SOCKET_SERVER.onEvent(webSocketEvent);
 }
 
