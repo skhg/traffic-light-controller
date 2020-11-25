@@ -21,7 +21,7 @@ jobs:
           yarn run stylelint ./webapp/*.css
       - name: Run C++ linter
         run: |
-          cpplint --extensions=ino *.ino
+          cpplint --extensions=ino **/*.ino
       - name: Validate Swagger docs
         uses: mbowman100/swagger-validator-action@master
         with:
