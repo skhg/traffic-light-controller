@@ -96,7 +96,7 @@ void lightSwitch(int light, boolean newState) {
     case GREEN_LIGHT: {
       if (newState != _greenLit) {
         _greenLit = newState;
-        sendToWebSocketClients(greenLightJson());
+        sendToWebSocketClients(greenLightToJsonString());
       }
 
       break;
@@ -142,11 +142,11 @@ void readSensors() {
     _greenHumidity = SENSOR_GREEN.readHumidity();
     _greenTemperature = SENSOR_GREEN.readTemperature();
 
-    sendToWebSocketClients(sensorsJson());
+    sendToWebSocketClients(sensorValuesToJsonString());
   }
 }
 
-String sensorsJson() {
+String sensorValuesToJsonString() {
   String content;
   StaticJsonDocument<JSON_OBJECT_SIZE(4)> sensorsJson;
   sensorsJson["redTemperature"] = _redTemperature;
@@ -173,7 +173,7 @@ void rhythm() {
   }
 }
 
-void htmlRootContent() {
+void httpRootEventHandler() {
   if (HTTP_SERVER.method() != HTTP_GET) {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
       METHOD_NOT_ALLOWED_MESSAGE);
@@ -188,7 +188,7 @@ void htmlRootContent() {
   HTTP_SERVER.send(HTTP_OK, "text/html", HTTP_CLIENT.getString());
 }
 
-void handleNotFound() {
+void httpNotFoundEventHandler() {
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += HTTP_SERVER.uri();
@@ -203,26 +203,27 @@ void handleNotFound() {
   HTTP_SERVER.send(HTTP_NOT_FOUND, CONTENT_TYPE_TEXT_PLAIN, message);
 }
 
-void handleParty() {
+void partyModeHttpEventHandler() {
   if (HTTP_SERVER.method() == HTTP_PUT) {
     _partyOn = true;
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party On!");
     Serial.println("Party started");
-    sendToWebSocketClients(partyJson());
+    sendToWebSocketClients(partyModeToJsonString());
   } else if (HTTP_SERVER.method() == HTTP_DELETE) {
     _partyOn = false;
     HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_TEXT_PLAIN, "Party's Over");
     Serial.println("Party ended");
-    sendToWebSocketClients(partyJson());
+    sendToWebSocketClients(partyModeToJsonString());
   } else if (HTTP_SERVER.method() == HTTP_GET) {
-    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, partyJson());
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON,
+      partyModeToJsonString());
   } else {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
       METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
-String partyJson() {
+String partyModeToJsonString() {
   String content;
   StaticJsonDocument<JSON_OBJECT_SIZE(1)> partyJson;
   partyJson["party"] = _partyOn;
@@ -230,11 +231,7 @@ String partyJson() {
   return content;
 }
 
-String clientIP() {
-  return HTTP_SERVER.client().remoteIP().toString();
-}
-
-void handleRed() {
+void redLightHttpEventHandler() {
   if (HTTP_SERVER.method() == HTTP_PUT) {
     lightSwitch(RED_LIGHT, true);
     HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
@@ -257,7 +254,7 @@ String redLightJson() {
   return content;
 }
 
-String greenLightJson() {
+String greenLightToJsonString() {
   String content;
   StaticJsonDocument<JSON_OBJECT_SIZE(1)> greenJson;
   greenJson["green"] = _greenLit;
@@ -265,7 +262,7 @@ String greenLightJson() {
   return content;
 }
 
-void handleGreen() {
+void greenLightHttpEventHandler() {
   if (HTTP_SERVER.method() == HTTP_PUT) {
     lightSwitch(GREEN_LIGHT, true);
     HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
@@ -273,14 +270,15 @@ void handleGreen() {
     lightSwitch(GREEN_LIGHT, false);
     HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
   } else if (HTTP_SERVER.method() == HTTP_GET) {
-    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, greenLightJson());
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON,
+      greenLightToJsonString());
   } else {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
       METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
-void handleStatus() {
+void statusHttpEventHandler() {
   if (HTTP_SERVER.method() != HTTP_GET) {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
       METHOD_NOT_ALLOWED_MESSAGE);
@@ -305,7 +303,7 @@ void handleStatus() {
   }
 }
 
-void handleTempo() {
+void tempoHttpEventHandler() {
   if (HTTP_SERVER.method() == HTTP_PUT) {
     if (HTTP_SERVER.hasArg("plain") == false) {
       HTTP_SERVER.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN,
@@ -316,17 +314,18 @@ void handleTempo() {
       _bpm = bpmJson["bpm"];
       Serial.println("BPM is now: " + String(_bpm));
       HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
-      sendToWebSocketClients(tempoJson());
+      sendToWebSocketClients(tempoToJsonString());
     }
   } else if (HTTP_SERVER.method() == HTTP_GET) {
-    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, tempoJson());
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON,
+      tempoToJsonString());
   } else {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
       METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
-String tempoJson() {
+String tempoToJsonString() {
   String content;
   StaticJsonDocument<JSON_OBJECT_SIZE(1)> tempoJson;
   tempoJson["bpm"] = _bpm;
@@ -334,7 +333,7 @@ String tempoJson() {
   return content;
 }
 
-void handleSong() {
+void songHttpEventHandler() {
   if (HTTP_SERVER.method() == HTTP_PUT) {
     if (HTTP_SERVER.hasArg("plain") == false) {
       HTTP_SERVER.send(HTTP_BAD_REQUEST, CONTENT_TYPE_TEXT_PLAIN,
@@ -351,24 +350,25 @@ void handleSong() {
       Serial.println("Song is now: " + _currentTitle + " from "+ _currentAlbum +
         " by " + _currentArtist);
       HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
-      sendToWebSocketClients(songJson());
+      sendToWebSocketClients(songToJsonString());
     }
   } else if (HTTP_SERVER.method() == HTTP_GET) {
-    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON, songJson());
+    HTTP_SERVER.send(HTTP_OK, CONTENT_TYPE_APPLICATION_JSON,
+      songToJsonString());
   } else if (HTTP_SERVER.method() == HTTP_DELETE) {
     _currentArtist = "";
     _currentAlbum = "";
     _currentTitle = "";
     Serial.println("Song ended");
     HTTP_SERVER.send(HTTP_NO_CONTENT, CONTENT_TYPE_TEXT_PLAIN, EMPTY_STRING);
-    sendToWebSocketClients(songJson());
+    sendToWebSocketClients(songToJsonString());
   } else {
     HTTP_SERVER.send(HTTP_METHOD_NOT_ALLOWED, CONTENT_TYPE_TEXT_PLAIN,
       METHOD_NOT_ALLOWED_MESSAGE);
   }
 }
 
-String songJson() {
+String songToJsonString() {
   String content;
   StaticJsonDocument<JSON_OBJECT_SIZE(3) + 1000> changedSongJson;
   changedSongJson["title"] = _currentTitle;
@@ -378,7 +378,7 @@ String songJson() {
   return content;
 }
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload,
+void webSocketEventHandler(uint8_t num, WStype_t type, uint8_t * payload,
   size_t length) {
   IPAddress ip = WEB_SOCKET_SERVER.remoteIP(num);
 
@@ -427,16 +427,16 @@ void setup(void) {
   Serial.print(HOST_NAME);
   Serial.println("/");
 
-  HTTP_SERVER.on("/", htmlRootContent);
+  HTTP_SERVER.on("/", httpRootEventHandler);
 
-  HTTP_SERVER.on("/api/red", handleRed);
-  HTTP_SERVER.on("/api/green", handleGreen);
-  HTTP_SERVER.on("/api/tempo", handleTempo);
-  HTTP_SERVER.on("/api/party", handleParty);
-  HTTP_SERVER.on("/api/status", handleStatus);
-  HTTP_SERVER.on("/api/song", handleSong);
+  HTTP_SERVER.on("/api/red", redLightHttpEventHandler);
+  HTTP_SERVER.on("/api/green", greenLightHttpEventHandler);
+  HTTP_SERVER.on("/api/tempo", tempoHttpEventHandler);
+  HTTP_SERVER.on("/api/party", partyModeHttpEventHandler);
+  HTTP_SERVER.on("/api/status", statusHttpEventHandler);
+  HTTP_SERVER.on("/api/song", songHttpEventHandler);
 
-  HTTP_SERVER.onNotFound(handleNotFound);
+  HTTP_SERVER.onNotFound(httpNotFoundEventHandler);
 
   HTTP_SERVER.begin();
   Serial.println("HTTP server started");
@@ -445,7 +445,7 @@ void setup(void) {
 
   // Disconnect after a single failed heartbeat
   WEB_SOCKET_SERVER.enableHeartbeat(1000, 1000, 1);
-  WEB_SOCKET_SERVER.onEvent(webSocketEvent);
+  WEB_SOCKET_SERVER.onEvent(webSocketEventHandler);
 }
 
 void loop(void) {
