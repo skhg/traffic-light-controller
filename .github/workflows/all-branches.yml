@@ -38,12 +38,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Checkout custom Arduino library
+      - name: Checkout custom WiFi library
         uses: actions/checkout@v2
         with:
           repository: skhg/home_wifi
           ref: master
           path: CustomHomeWiFiLibrary # must contain string "Custom"
+      - name: Checkout custom Async TCP library
+        uses: actions/checkout@v2
+        with:
+          repository: me-no-dev/ESPAsyncTCP
+          ref: master
+          path: CustomAsyncTCPLibrary # must contain string "Custom"
       - name: Test compile for Arduino
         uses: ArminJo/arduino-test-compile@v3
         with:
