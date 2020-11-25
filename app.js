@@ -5,7 +5,11 @@ let state;
 let webSocket;
 let textSizeBugLoopId;
 
-function connect() {
+/**
+ * Set up the webSocket connection and associated hooks to socket events
+ * @return {undefined}
+ */
+function establishWebSocketConnection() {
     webSocket = new WebSocket(webSocketUrl);
     webSocket.onopen = function() {
         console.debug('WebSocket connected.');
@@ -18,21 +22,26 @@ function connect() {
             console.debug('WebSocket is closed. Reconnect will be attempted in 1 second.', e.reason);
             setTimeout(function() {
                 refreshState();
-                connect();
+                establishWebSocketConnection();
             }, 1000);
         }
     };
 
     webSocket.onerror = function(err) {
         console.error('Closing socket due to error', err);
-        disconnect();
+        disconnectWebSocket();
     };
 }
 
+/**
+ * Renders the webapp <div>s within the <body>.
+ * Adds some <link>s which are required to load CSS and favicons.
+ * @return {undefined}
+ */
 function renderSkeleton(){
-    var webRoot = 'https://jackhiggins.ie/traffic-light-controller';
+    const webRoot = 'https://jackhiggins.ie/traffic-light-controller';
 
-    var basicSkeleton = `
+    document.body.innerHTML = `
   <div class="grid-container">
       <div id="red">
             <div class="sensor infoText" id="red-sensor"></div>
@@ -45,31 +54,33 @@ function renderSkeleton(){
     <div id="circle-container">
         <div id="circle"></div>
     </div>
-  `
+  `;
 
-    document.body.innerHTML = basicSkeleton;
-
-    var appleIcon = document.createElement('link');
+    const appleIcon = document.createElement('link');
     appleIcon.rel = 'apple-touch-icon';
     appleIcon.sizes = '180x180';
-    appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=ba94947e17bf88662ed1627091d0cc6300b50513';
+    appleIcon.href = webRoot + '/favicon_io/apple-touch-icon.png?version=e910080b30ee078811a0e8e56d8a9cbe13cf654f';
     document.head.appendChild(appleIcon);
 
-    var icon = document.createElement('link');
+    const icon = document.createElement('link');
     icon.rel = 'icon';
     icon.type = 'image/png';
-    icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=ba94947e17bf88662ed1627091d0cc6300b50513';
+    icon.href = webRoot + '/favicon_io/favicon-32x32.png?version=e910080b30ee078811a0e8e56d8a9cbe13cf654f';
     document.head.appendChild(icon);
 
-    var stylesheet = document.createElement('link');
+    const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
     stylesheet.type = 'text/css';
-    stylesheet.href = webRoot + '/style.css?version=ba94947e17bf88662ed1627091d0cc6300b50513';
+    stylesheet.href = webRoot + '/style.css?version=e910080b30ee078811a0e8e56d8a9cbe13cf654f';
     document.head.appendChild(stylesheet);
 
     document.title = "Traffic Light";
 }
 
+/**
+ * Entry point to application from HTML. Initialises global state, renders app, and creates event hooks.
+ * @return {undefined}
+ */
 function app(){ // eslint-disable-line no-unused-vars
     serverAddr = '/api';
     state = {
@@ -86,8 +97,8 @@ function app(){ // eslint-disable-line no-unused-vars
 
     renderSkeleton();
 
-    var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
-    var eventName = supportsTouch ? 'touchend' : 'click';
+    const supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+    const eventName = supportsTouch ? 'touchend' : 'click';
 
     $('circle').addEventListener(eventName, party);
     $('green').addEventListener(eventName, green);
@@ -99,14 +110,19 @@ function app(){ // eslint-disable-line no-unused-vars
     textSizeBugLoopId = setInterval(textSizeBugFix, 100);
 
     refreshState();
-    connect();
-    document.addEventListener('visibilitychange', visibilityHandler);
-    window.onunload = window.onbeforeunload = disconnect();
+    establishWebSocketConnection();
+    document.addEventListener('visibilitychange', onBrowserShownOrHidden);
+    window.onunload = window.onbeforeunload = disconnectWebSocket();
 }
 
+/**
+ * Attempts to fix the bug where the text "Party Mode" is the wrong size at startup.
+ * Appears not to work. todo remove this
+ * @return {undefined}
+ */
 function textSizeBugFix(){
-    var circleFontSize = window.getComputedStyle($('circle'), null).getPropertyValue('font-size');
-    var expectedFontSize = "90px";
+    const circleFontSize = window.getComputedStyle($('circle'), null).getPropertyValue('font-size');
+    const expectedFontSize = "90px";
 
     if(circleFontSize === expectedFontSize){
         console.debug("Circle font size ok!");
@@ -116,41 +132,53 @@ function textSizeBugFix(){
         $('circle').style.display = 'none';
         $('circle').style.display = 'block';
     }
-
 }
 
-function disconnect(){
+function disconnectWebSocket(){
     if(webSocket.readyState === WebSocket.OPEN){
         webSocket.close();
     }
 }
 
-function visibilityHandler(){
+/**
+ * Handler for browser visibility change events
+ * @return {undefined}
+ */
+function onBrowserShownOrHidden(){
     if(document.hidden){
-        disconnect();
+        disconnectWebSocket();
     }else{
         refreshState();
-        connect();
+        establishWebSocketConnection();
     }
 }
 
+/**
+ * Parse each incoming webSocket message and update the global state
+ * @param {MessageEvent} event WebSocket event message
+ * @return {undefined}
+ */
 function handleWebSocketMessage(event){
-    var messageContents = JSON.parse(event.data);
+    const messageContents = JSON.parse(event.data);
 
-    for(var key of Object.keys(messageContents)){
+    for(const key of Object.keys(messageContents)){
         state[key] = messageContents[key];
     }
 
     updateScreen();
 }
 
+/**
+ * Use the updated state to adjust on-screen elements and cause their redraw
+ * @return {undefined}
+ */
 function updateScreen(){
-    var circleDiv = $('circle');
-    var greenDiv = $('green');
-    var redDiv = $('red');
-    var redSensorDiv = $('red-sensor');
-    var greenSensorDiv = $('green-sensor');
-    var playingSongDiv = $('playing-song');
+    const circleDiv = $('circle');
+    const greenDiv = $('green');
+    const redDiv = $('red');
+    const redSensorDiv = $('red-sensor');
+    const greenSensorDiv = $('green-sensor');
+    const playingSongDiv = $('playing-song');
 
     if(state['green']){
         greenDiv.className = 'bright-green';
@@ -173,18 +201,22 @@ function updateScreen(){
     greenSensorDiv.innerHTML = "" + Math.round(state['greenTemperature']) + "°C";
     redSensorDiv.innerHTML = "" + Math.round(state['redTemperature']) + "°C";
 
-    var artistLine = state.artist.length === 0 ? "" : "" + state["artist"] + "<br/>";
-    var titleLine = state.title.length === 0 ? "" : "<i>" + state['title'] + "</i>" + "<br/>";
-    var albumLine = state.album.length === 0 ? "" : "" + state["album"];
+    const artistLine = state.artist.length === 0 ? "" : "" + state["artist"] + "<br/>";
+    const titleLine = state.title.length === 0 ? "" : "<i>" + state['title'] + "</i>" + "<br/>";
+    const albumLine = state.album.length === 0 ? "" : "" + state["album"];
     playingSongDiv.innerHTML = artistLine + titleLine + albumLine;
 }
 
+/**
+ * Manually perform a GET request to the server to get a full state update
+ * @return {undefined}
+ */
 function refreshState(){
     refreshQuery = new XMLHttpRequest();
     refreshQuery.open('GET', serverAddr + '/status', true);
     refreshQuery.onreadystatechange = function(){
-        if (refreshQuery.readyState == XMLHttpRequest.DONE) {
-            if (refreshQuery.status == 200) {
+        if (refreshQuery.readyState === XMLHttpRequest.DONE) {
+            if (refreshQuery.status === 200) {
                 state =  JSON.parse(refreshQuery.responseText);
                 updateScreen();
             }
@@ -193,9 +225,13 @@ function refreshState(){
     refreshQuery.send();
 }
 
+/**
+ * Notify the server that the user wants to change the green light state
+ * @return {undefined}
+ */
 function green(){
     refreshQuery.abort();
-    var xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     if(state['green']){
         xhr.open('DELETE', serverAddr + '/green', true);
     }else{
@@ -207,9 +243,13 @@ function green(){
     updateScreen();
 }
 
+/**
+ * Notify the server that the user wants to change the red light state
+ * @return {undefined}
+ */
 function red(){
     refreshQuery.abort();
-    var xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     if(state['red']){
         xhr.open('DELETE', serverAddr + '/red', true);
     }else{
@@ -221,6 +261,10 @@ function red(){
     updateScreen();
 }
 
+/**
+ * Notify the server that the user wants to change the party mode state
+ * @return {undefined}
+ */
 function party(){
     refreshQuery.abort();
     const xhr = new XMLHttpRequest();
@@ -235,6 +279,11 @@ function party(){
     updateScreen();
 }
 
+/**
+ * jQuery-style replacement for document.getElementById
+ * @param {string} elementId Element ID to get
+ * @returns {HTMLElement} The found element
+ */
 function $(elementId){
     return document.getElementById(elementId);
 }
