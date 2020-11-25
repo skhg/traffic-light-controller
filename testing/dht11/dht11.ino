@@ -1,3 +1,9 @@
+/**
+ * Copyright 2020 Jack Higgins : https://github.com/skhg
+ * All components of this project are licensed under the MIT License.
+ * See the LICENSE file for details.
+ */
+
 #include <DHT.h>
 
 #define TEMPSENSOR_RED_PIN D3
@@ -19,7 +25,7 @@ void loop() {
 
   Serial.println("Red Sensor");
   double hum = TEMP_SENSOR_RED.readHumidity();
-  double temp= TEMP_SENSOR_RED.readTemperature();
+  double temp = TEMP_SENSOR_RED.readTemperature();
   Serial.print("Humidity: ");
   Serial.print(hum);
   Serial.print(" %, Temp: ");
@@ -30,7 +36,7 @@ void loop() {
 
   Serial.println("Green Sensor");
   hum = TEMP_SENSOR_GREEN.readHumidity();
-  temp= TEMP_SENSOR_GREEN.readTemperature();
+  temp = TEMP_SENSOR_GREEN.readTemperature();
   Serial.print("Humidity: ");
   Serial.print(hum);
   Serial.print(" %, Temp: ");
