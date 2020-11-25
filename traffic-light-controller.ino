@@ -14,7 +14,7 @@
 #define BOTH_FLASH 2
 
 #define DHT_SENSOR_TYPE DHT11
-gf4gf7i4gf734s
+
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
