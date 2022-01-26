@@ -23,7 +23,7 @@ jobs:
         run: |
           cpplint --extensions=ino **/*.ino
       - name: Validate Swagger docs
-        uses: mbowman100/swagger-validator-action@master
+        uses: mbowman100/swagger-validator-action@2.0
         with:
           files: |
             openapi-spec.yaml
