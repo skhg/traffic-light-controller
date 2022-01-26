@@ -23,7 +23,7 @@ jobs:
         run: |
           cpplint --extensions=ino **/*.ino
       - name: Validate Swagger docs
-        uses: mbowman100/swagger-validator-action@master
+        uses: mbowman100/swagger-validator-action@2.0
         with:
           files: |
             openapi-spec.yaml
@@ -53,7 +53,7 @@ jobs:
       - name: Test compile for Arduino
         uses: ArminJo/arduino-test-compile@v3
         with:
-          arduino-board-fqbn: esp8266:esp8266:nodemcu:xtal=80,vt=flash,exception=legacy,ssl=all,eesz=4M2M,ip=lm2f,dbg=Disabled,lvl=None____,wipe=none,baud=115200
+          arduino-board-fqbn: esp8266:esp8266:nodemcu:xtal=80,vt=flash,ssl=all,eesz=4M2M,ip=lm2f,dbg=Disabled,lvl=None____,wipe=none,baud=115200
           platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
           required-libraries: DHT sensor library,ArduinoJson,WebSockets
           sketch-names: "*.ino"
